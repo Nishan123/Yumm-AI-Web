@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { RecipeInfoCard } from "./RecipeInfoCard";
 import { RecipeMetadata } from "./RecipeMetadata";
-import { CustomTabBar } from "@/components/CustomTabBar";
+import { CustomTabBar } from "@/app/(chefs)/_components/shared/CustomTabBar";
 import { IngredientsList } from "./IngredientsList";
 import { InstructionsList } from "./InstructionsList";
 import { ToolsList } from "./ToolsList";
@@ -21,6 +21,7 @@ interface RecipeContentProps {
   onAddToCookbook?: () => void;
   isAddingToCookbook?: boolean;
   onUpdateProgress?: (updates: Partial<UserRecipe>) => void;
+  currentUser?: { uid: string } | null;
 }
 
 export const RecipeContent = ({
@@ -29,12 +30,15 @@ export const RecipeContent = ({
   onAddToCookbook,
   isAddingToCookbook = false,
   onUpdateProgress,
+  currentUser,
 }: RecipeContentProps) => {
   const TABS = ["Ingredients", "Instructions", "Tools"];
   const [activeTab, setActiveTab] = useState(TABS[0]);
 
   const checkPermission = () => {
-    if (!isInCookbook) {
+    const isOwner = currentUser?.uid && currentUser.uid === recipe.generatedBy;
+
+    if (!isInCookbook && !isOwner) {
       toast("Add to cookbook to track progress", {
         action: {
           label: "Add",
@@ -101,20 +105,27 @@ export const RecipeContent = ({
             {recipe.recipeName}
           </h1>
 
-          {!isInCookbook && onAddToCookbook && (
-            <button
-              onClick={onAddToCookbook}
-              disabled={isAddingToCookbook}
-              className="flex-shrink-0 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-orange-600 active:scale-95 disabled:opacity-50"
-            >
-              {isAddingToCookbook ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : (
-                <Plus size={16} />
-              )}
-              Add to Cookbook
-            </button>
-          )}
+          {/* Show Add to Cookbook ONLY if:
+              1. Not already in cookbook
+              2. Add handler is provided
+              3. Current user is NOT the creator (optional logic if creator auto-owns, but here we just hide it to avoid confusion)
+           */}
+          {!isInCookbook &&
+            onAddToCookbook &&
+            currentUser?.uid !== recipe.generatedBy && (
+              <button
+                onClick={onAddToCookbook}
+                disabled={isAddingToCookbook}
+                className="flex-shrink-0 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-orange-600 active:scale-95 disabled:opacity-50"
+              >
+                {isAddingToCookbook ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <Plus size={16} />
+                )}
+                Add to Cookbook
+              </button>
+            )}
 
           {isInCookbook && (
             <div className="flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400">

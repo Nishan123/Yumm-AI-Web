@@ -3,18 +3,22 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChefHat, ChevronDown, Check } from "lucide-react";
-import { InputWidgetTitle } from "@/components/InputWidgetTitle";
-import { IngredientsWrapContainer } from "@/components/IngredientsWrapContainer";
-import { AddIngredientsModal } from "@/components/AddIngredientsModal";
-import { AvailableTimeSelector } from "@/components/AvailableTimeSelector";
-import { CustomTabBar } from "@/components/CustomTabBar";
+import { InputWidgetTitle } from "@/app/(chefs)/_components/shared/InputWidgetTitle";
+import { IngredientsWrapContainer } from "@/app/(chefs)/_components/shared/IngredientsWrapContainer";
+import { AddIngredientsModal } from "@/app/(chefs)/_components/shared/AddIngredientsModal";
+import { AvailableTimeSelector } from "@/app/(chefs)/_components/shared/AvailableTimeSelector";
+import { CustomTabBar } from "@/app/(chefs)/_components/shared/CustomTabBar";
 import { IngredientModel } from "@/data/mockIngredients";
 import { MEAL_OPTIONS, EXPERTISE_OPTIONS } from "@/data/options";
-import { MealSelector } from "@/components/MealSelector";
+import { MealSelector } from "@/app/(chefs)/_components/shared/MealSelector";
 import { ConstantsString } from "@/data/constants";
 import { cn } from "@/lib/utils";
-import { NumberOfPeopleSelector } from "@/components/NumberOfPeopleSelector";
-import { DietaryRestrictionsSelector } from "@/components/DietaryRestrictionsSelector";
+import { NumberOfPeopleSelector } from "@/app/(chefs)/_components/master-chef/NumberOfPeopleSelector";
+import { DietaryRestrictionsSelector } from "@/app/(chefs)/_components/shared/DietaryRestrictionsSelector";
+import { RecipeGenerationModal } from "@/app/(chefs)/_components/shared/RecipeGenerationModal";
+import { useRecipeGeneration } from "@/hooks/useRecipeGeneration";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/context/auth-context";
 
 export default function MasterChefPage() {
   const router = useRouter();
@@ -30,6 +34,46 @@ export default function MasterChefPage() {
   const [dietary, setDietary] = useState<string[]>([]);
   const [peopleCount, setPeopleCount] = useState(1);
   const [preferences, setPreferences] = useState("");
+
+  const { state, generateMasterRecipe, resetState, isLoading } =
+    useRecipeGeneration();
+  const { user, isLoading: loading } = useAuth();
+
+  const handleGenerateRecipe = async () => {
+    if (selectedIngredients.length === 0) {
+      toast.error("Please select at least one ingredient!");
+      return;
+    }
+
+    try {
+      const recipe = await generateMasterRecipe({
+        ingredients: selectedIngredients,
+        mealType: selectedMeal,
+        dietaryRestrictions: dietary,
+        numberOfServings: peopleCount,
+        mealPreferences: preferences,
+        availableTimeMinutes: time,
+        expertise: expertise,
+        userId: user?.uid,
+      });
+
+      if (recipe) {
+        console.log("Recipe generated successfully:", recipe.recipeName);
+        // Store the generated recipe in sessionStorage for the cooking page
+        // Store the generated recipe in sessionStorage (optional now, but good for backup)
+        const recipeStr = JSON.stringify(recipe);
+        sessionStorage.setItem("generatedRecipe", recipeStr);
+        console.log("Recipe stored, navigating to recipe ID...");
+        // Redirect using recipeId to force loading from DB
+        window.location.href = `/cooking?recipeId=${recipe.recipeId}`;
+      } else {
+        toast.error("No recipe was generated. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to generate recipe:", error);
+      toast.error("Failed to generate recipe. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -152,10 +196,9 @@ export default function MasterChefPage() {
         {/* Generate Button */}
         <div className="px-4 pt-4">
           <button
-            className="w-full h-14 bg-black text-white rounded-full font-bold text-lg shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            onClick={() => {
-              alert("Generating Master Chef Recipe!");
-            }}
+            className="w-full h-14 bg-black text-white rounded-full font-bold text-lg shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleGenerateRecipe}
+            disabled={isLoading}
           >
             <ChefHat className="w-6 h-6" />
             Generate Meal
@@ -168,6 +211,14 @@ export default function MasterChefPage() {
         onClose={() => setIsAddModalOpen(false)}
         selectedIngredients={selectedIngredients}
         onConfirm={setSelectedIngredients}
+      />
+
+      <RecipeGenerationModal
+        isOpen={isLoading || state.status === "error"}
+        status={state.status}
+        loadingMessage={state.loadingMessage}
+        errorMessage={state.errorMessage}
+        onClose={resetState}
       />
     </div>
   );

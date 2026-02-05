@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./axios";
 import { UserRecipe, UserRecipeResponse, CheckCookbookResponse } from "../types/cookbook.type";
 
 export const cookbookApi = {

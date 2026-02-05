@@ -18,7 +18,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
   const router = useRouter();
-  const { login, googleLogin } = useAuth();
+  const { login, googleLogin, isLoading: loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -53,6 +53,8 @@ const LoginForm = () => {
           err.response?.data?.message ||
             "Login failed. Please check your credentials.",
         );
+      } else if (err instanceof Error) {
+        toast.error(err.message);
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
@@ -90,28 +92,40 @@ const LoginForm = () => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit, onInvalid)}
-      className="flex flex-col gap-10 flex-1 py-5"
+      className="flex flex-col items-center gap-10 flex-1 py-5"
     >
-      <div className="flex flex-col min-h-30.5 gap-5">
+      <div className="flex flex-col min-h-30.5 gap-5 w-full max-w-[420px]">
         <Input
           placeholder={"Email"}
           type={"email"}
           {...register("email")}
           error={errors.email?.message}
+          className="w-full"
         />
         <Input
           placeholder={"Password"}
           type={"password"}
           {...register("password")}
           error={errors.password?.message}
+          className="w-full"
         />
+        <div className="flex justify-end -mt-3">
+          <button
+            type="button"
+            onClick={() => router.push("/forgot-password")}
+            className="text-xs font-semibold text-gray-500 hover:text-[#819932] transition-colors"
+          >
+            Forgot Password?
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center gap-4.5">
+      <div className="flex flex-col items-center justify-center gap-4.5 w-full max-w-[420px]">
         <PrimaryBtn
           buttonName={"Log in"}
           type="submit"
           loading={isSubmitting}
+          className="w-full"
         />
         <div className="flex items-center gap-1 w-full">
           <span className="w-full h-px bg-[#1616169a]" />

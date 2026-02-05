@@ -19,7 +19,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 const SignupForm = () => {
   const router = useRouter();
-  const { signup, googleLogin } = useAuth();
+  const { signup, googleLogin, isLoading: loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {

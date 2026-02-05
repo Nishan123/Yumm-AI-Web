@@ -1,4 +1,6 @@
-import api from "./api";
+import api from "./axios";
+import { API } from "./endpoints";
+import { User } from "./user";
 
 export interface LoginData {
     email: string;
@@ -20,18 +22,6 @@ export interface GoogleAuthData {
     idToken: string;
 }
 
-export interface User {
-    uid: string;
-    fullName: string;
-    email: string;
-    profilePic: string;
-    allergenicIngredients: string[];
-    authProvider: string;
-    role: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
 export interface AuthResponse {
     success: boolean;
     data: {
@@ -39,31 +29,32 @@ export interface AuthResponse {
         user: User;
         isNewUser?: boolean;
     };
-}
-
-export interface UserResponse {
-    success: boolean;
-    data: User;
+    message?: string;
 }
 
 export const authApi = {
     login: async (data: LoginData): Promise<AuthResponse> => {
-        const response = await api.post<AuthResponse>("/auth/login", data);
+        const response = await api.post<AuthResponse>(API.AUTH.LOGIN, data);
         return response.data;
     },
 
     signup: async (data: SignupData): Promise<AuthResponse> => {
-        const response = await api.post<AuthResponse>("/auth/register", data);
+        const response = await api.post<AuthResponse>(API.AUTH.REGISTER, data);
         return response.data;
     },
 
     googleAuth: async (data: GoogleAuthData): Promise<AuthResponse> => {
-        const response = await api.post<AuthResponse>("/auth/google", data);
+        const response = await api.post<AuthResponse>(API.AUTH.GOOGLE, data);
         return response.data;
     },
 
-    getUser: async (uid: string): Promise<UserResponse> => {
-        const response = await api.get<UserResponse>(`/users/${uid}`);
+    forgotPassword: async (email: string): Promise<AuthResponse> => {
+        const response = await api.post<AuthResponse>(API.AUTH.FORGOT_PASSWORD, { email });
+        return response.data;
+    },
+
+    resetPassword: async (token: string, newPassword: string): Promise<AuthResponse> => {
+        const response = await api.post<AuthResponse>(API.AUTH.RESET_PASSWORD(token), { newPassword });
         return response.data;
     },
 };

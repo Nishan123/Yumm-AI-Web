@@ -7,13 +7,8 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import {
-  authApi,
-  User,
-  LoginData,
-  SignupData,
-  GoogleAuthData,
-} from "@/lib/api/auth";
+import { authApi, LoginData, SignupData, GoogleAuthData } from "@/lib/api/auth";
+import { userApi, User } from "@/lib/api/user";
 import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
 
 interface AuthContextType {
@@ -42,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserFromBackend = useCallback(
     async (uid: string): Promise<User | null> => {
       try {
-        const response = await authApi.getUser(uid);
+        const response = await userApi.getUser(uid);
         if (response.success) {
           return response.data;
         }

@@ -5,10 +5,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder: string;
   type: string;
   error?: string;
+  className?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ placeholder, type, error, ...props }, ref) => {
+  ({ placeholder, type, error, className, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPasswordType = type === "password";
     const inputType = isPasswordType
@@ -22,8 +23,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     return (
-      <div className="flex flex-col gap-1">
-        <div className="relative w-92.5 h-13.5">
+      <div className={`flex flex-col gap-1 ${className ?? ""}`}>
+        <div className="relative w-full h-13.5">
           <input
             ref={ref}
             placeholder={placeholder}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart, Clock, Flame, ChefHat, Users } from "lucide-react";
 import { Recipe } from "@/lib/types/recipe.type";
+import { useRecipeLike } from "@/hooks/useRecipeLike";
 
 export interface CardProps {
   recipe: Recipe;
@@ -26,7 +27,7 @@ const Card = ({ recipe }: CardProps) => {
   const difficulty =
     difficultyMap[recipe.experienceLevel] || recipe.experienceLevel;
 
-  console.log("Card image URL:", imageUrl);
+  const { isLiked, toggleLike } = useRecipeLike(recipe);
 
   const handleClick = () => {
     router.push(`/cooking?recipeId=${recipe.recipeId}`);
@@ -46,10 +47,12 @@ const Card = ({ recipe }: CardProps) => {
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
         <div
-          className="absolute w-10 h-10 bg-white/40 rounded-full right-2 top-2 text-white
-        flex justify-center items-center backdrop-blur-sm transition-colors group-hover:bg-white/60"
+          onClick={toggleLike}
+          className={`absolute w-10 h-10 rounded-full right-2 top-2 
+          flex justify-center items-center backdrop-blur-sm transition-all group-hover:bg-white/60 cursor-pointer
+          ${isLiked ? "bg-red-500 text-white" : "bg-white/40 text-white"}`}
         >
-          <Heart />
+          <Heart className={isLiked ? "fill-current" : ""} />
         </div>
       </div>
 

@@ -3,15 +3,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChefHat } from "lucide-react";
-import { InputWidgetTitle } from "@/components/InputWidgetTitle";
-import { IngredientsWrapContainer } from "@/components/IngredientsWrapContainer";
-import { AddIngredientsModal } from "@/components/AddIngredientsModal";
-import { AvailableTimeSelector } from "@/components/AvailableTimeSelector";
-import { CustomTabBar } from "@/components/CustomTabBar";
+import { InputWidgetTitle } from "@/app/(chefs)/_components/shared/InputWidgetTitle";
+import { IngredientsWrapContainer } from "@/app/(chefs)/_components/shared/IngredientsWrapContainer";
+import { AddIngredientsModal } from "@/app/(chefs)/_components/shared/AddIngredientsModal";
+import { AvailableTimeSelector } from "@/app/(chefs)/_components/shared/AvailableTimeSelector";
+import { CustomTabBar } from "@/app/(chefs)/_components/shared/CustomTabBar";
 import { IngredientModel } from "@/data/mockIngredients";
 import { MEAL_OPTIONS, EXPERTISE_OPTIONS } from "@/data/options";
-import { MealSelector } from "@/components/MealSelector";
+import { MealSelector } from "@/app/(chefs)/_components/shared/MealSelector";
+import { RecipeGenerationModal } from "@/app/(chefs)/_components/shared/RecipeGenerationModal";
+import { useRecipeGeneration } from "@/hooks/useRecipeGeneration";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/context/auth-context";
 
 export default function PantryChefPage() {
   const router = useRouter();
@@ -23,6 +27,43 @@ export default function PantryChefPage() {
   const [selectedMeal, setSelectedMeal] = useState(MEAL_OPTIONS[5].value); // Default 'anything'
   const [duration, setDuration] = useState(30);
   const [expertise, setExpertise] = useState(EXPERTISE_OPTIONS[0].value);
+
+  const { state, generatePantryRecipe, resetState, isLoading } =
+    useRecipeGeneration();
+  const { user, isLoading: loading } = useAuth();
+
+  const handleGenerateRecipe = async () => {
+    if (selectedIngredients.length === 0) {
+      toast.error("Please select at least one ingredient!");
+      return;
+    }
+
+    try {
+      const recipe = await generatePantryRecipe({
+        ingredients: selectedIngredients,
+        mealType: selectedMeal,
+        availableTimeMinutes: duration,
+        expertise: expertise,
+        userId: user?.uid,
+      });
+
+      if (recipe) {
+        console.log("Recipe generated successfully:", recipe.recipeName);
+        // Store the generated recipe in sessionStorage for the cooking page
+        // Store the generated recipe in sessionStorage (optional now, but good for backup)
+        const recipeStr = JSON.stringify(recipe);
+        sessionStorage.setItem("generatedRecipe", recipeStr);
+        console.log("Recipe stored, navigating to recipe ID...");
+        // Redirect using recipeId to force loading from DB
+        window.location.href = `/cooking?recipeId=${recipe.recipeId}`;
+      } else {
+        toast.error("No recipe was generated. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to generate recipe:", error);
+      toast.error("Failed to generate recipe. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -115,14 +156,9 @@ export default function PantryChefPage() {
         {/* Generate Button */}
         <div className="px-4 pt-4">
           <button
-            className="w-full h-14 bg-black text-white rounded-full font-bold text-lg shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            onClick={() => {
-              if (selectedIngredients.length === 0) {
-                alert("Please select at least one ingredient!");
-                return;
-              }
-              alert(`Generating ${selectedMeal} recipe for ${duration} mins!`);
-            }}
+            className="w-full h-14 bg-black text-white rounded-full font-bold text-lg shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleGenerateRecipe}
+            disabled={isLoading}
           >
             <ChefHat className="w-6 h-6" />
             Generate Meal
@@ -135,6 +171,14 @@ export default function PantryChefPage() {
         onClose={() => setIsAddModalOpen(false)}
         selectedIngredients={selectedIngredients}
         onConfirm={setSelectedIngredients}
+      />
+
+      <RecipeGenerationModal
+        isOpen={isLoading || state.status === "error"}
+        status={state.status}
+        loadingMessage={state.loadingMessage}
+        errorMessage={state.errorMessage}
+        onClose={resetState}
       />
     </div>
   );
