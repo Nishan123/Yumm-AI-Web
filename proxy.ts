@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Routes that require authentication
-const protectedRoutes = ["/home", "/cook-book", "/saved-recipes", "/every-item", "/profile"];
+const protectedRoutes = ["/home", "/cook-book", "/saved-recipes", "/every-item", "/profile", "/macro-chef", "/master-chef", "/pantry-chef"];
 
 // Routes only accessible when NOT logged in
 const authRoutes = ["/login", "/signup"];

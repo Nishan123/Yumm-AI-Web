@@ -71,8 +71,8 @@ interface RecipeInfoCardProps {
 }
 
 const difficultyMap: Record<string, string> = {
-  newBie: "Beginner",
-  canCook: "Intermediate",
+  newBie: "Newbie",
+  canCook: "Can Cook",
   expert: "Expert",
 };
 

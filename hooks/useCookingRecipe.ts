@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/context/auth-context";
-import { recipeApi } from "@/lib/api/recipe";
+import {
+    getRecipeAction,
+    getPublicRecipesAction,
+    updateRecipeAction
+} from "@/lib/actions/recipe-action";
 import { cookbookApi } from "@/lib/api/cookbook";
 import { toast } from "sonner";
 import { Recipe } from "@/lib/types/recipe.type";
@@ -88,7 +92,7 @@ export const useCookingRecipe = () => {
             // 2. If not in cookbook or user not logged in, fetch recipe directly by ID
             if (!displayRecipe) {
                 try {
-                    const foundRecipe = await recipeApi.getRecipe(recipeId);
+                    const foundRecipe = await getRecipeAction(recipeId);
                     if (foundRecipe) {
                         displayRecipe = foundRecipe;
                     }
@@ -96,7 +100,7 @@ export const useCookingRecipe = () => {
                     console.error("Failed to fetch recipe by ID", err);
                     // Fallback to existing public recipes logic if getRecipe failed
                     try {
-                        const recipes = await recipeApi.getPublicRecipes();
+                        const recipes = await getPublicRecipesAction();
                         const found = recipes.find((r) => r.recipeId === recipeId);
                         if (found) displayRecipe = found;
                     } catch (e) {
@@ -180,7 +184,7 @@ export const useCookingRecipe = () => {
                 await cookbookApi.updateUserRecipe(userRecipe.userRecipeId, updates);
             } else if (isOwner) {
                 console.log("Persisting progress for owner to source recipe");
-                await recipeApi.updateRecipe({
+                await updateRecipeAction({
                     ...recipe,
                     ...updates,
                 } as Recipe);

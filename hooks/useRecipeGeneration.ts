@@ -6,7 +6,10 @@ import { IngredientModel, MOCK_INGREDIENTS } from "@/data/mockIngredients";
 import { generateRecipeWithGemini } from "@/lib/services/gemini";
 import { generateRecipeImages } from "@/lib/services/imagen";
 import { getAllKitchenTools } from "@/lib/services/kitchenTools";
-import { recipeApi } from "@/lib/api/recipe";
+import {
+  saveRecipeAction,
+  uploadRecipeImagesAction
+} from "@/lib/actions/recipe-action";
 import {
   getPantryChefPrompt,
   getMasterChefPrompt,
@@ -63,6 +66,7 @@ export function useRecipeGeneration() {
       availableTimeMinutes: number;
       expertise: string;
       userId?: string;
+      allergenicIngredients?: string[];
     }) => {
       try {
         setState({
@@ -79,12 +83,14 @@ export function useRecipeGeneration() {
           mealType: params.mealType,
           availableTimeMinutes: params.availableTimeMinutes,
           expertise: params.expertise,
+          allergenicIngredients: params.allergenicIngredients || [],
         });
 
         const recipe = await generateRecipeWithGemini({
           prompt,
           selectedIngredients: params.ingredients,
           masterIngredients: MOCK_INGREDIENTS,
+          experienceLevel: params.expertise,
         });
 
         // Generate images for the recipe
@@ -121,7 +127,7 @@ export function useRecipeGeneration() {
             });
 
             // Upload images using the recipe ID
-            imageUrls = await recipeApi.uploadRecipeImages(recipe.recipeId, formData);
+            imageUrls = await uploadRecipeImagesAction(recipe.recipeId, formData);
           } catch (err) {
             console.error("Failed to upload images", err);
             // Continue without images if upload fails
@@ -142,7 +148,7 @@ export function useRecipeGeneration() {
           generatedRecipe: null,
         });
 
-        const savedRecipe = await recipeApi.saveRecipe(recipeWithImages);
+        const savedRecipe = await saveRecipeAction(recipeWithImages);
 
         setState({
           status: "success",
@@ -178,6 +184,7 @@ export function useRecipeGeneration() {
       availableTimeMinutes: number;
       expertise: string;
       userId?: string;
+      allergenicIngredients?: string[];
     }) => {
       try {
         setState({
@@ -197,12 +204,14 @@ export function useRecipeGeneration() {
           mealPreferences: params.mealPreferences,
           availableTimeMinutes: params.availableTimeMinutes,
           expertise: params.expertise,
+          allergenicIngredients: params.allergenicIngredients || [],
         });
 
         const recipe = await generateRecipeWithGemini({
           prompt,
           selectedIngredients: params.ingredients,
           masterIngredients: MOCK_INGREDIENTS,
+          experienceLevel: params.expertise,
         });
 
         // Generate images for the recipe
@@ -236,7 +245,7 @@ export function useRecipeGeneration() {
               const blob = dataURItoBlob(imgBase64);
               formData.append("images", blob, `recipe_image_${index}.png`);
             });
-            imageUrls = await recipeApi.uploadRecipeImages(recipe.recipeId, formData);
+            imageUrls = await uploadRecipeImagesAction(recipe.recipeId, formData);
           } catch (err) {
             console.error("Failed to upload images", err);
           }
@@ -255,7 +264,7 @@ export function useRecipeGeneration() {
           generatedRecipe: null,
         });
 
-        const savedRecipe = await recipeApi.saveRecipe(recipeWithImages);
+        const savedRecipe = await saveRecipeAction(recipeWithImages);
 
         setState({
           status: "success",
@@ -294,6 +303,7 @@ export function useRecipeGeneration() {
       availableTimeMinutes: number;
       expertise: string;
       userId?: string;
+      allergenicIngredients?: string[];
     }) => {
       try {
         setState({
@@ -316,12 +326,14 @@ export function useRecipeGeneration() {
           dietaryRestrictions: params.dietaryRestrictions,
           availableTimeMinutes: params.availableTimeMinutes,
           expertise: params.expertise,
+          allergenicIngredients: params.allergenicIngredients || [],
         });
 
         const recipe = await generateRecipeWithGemini({
           prompt,
           selectedIngredients: params.ingredients,
           masterIngredients: MOCK_INGREDIENTS,
+          experienceLevel: params.expertise,
         });
 
         // Generate images for the recipe
@@ -355,7 +367,7 @@ export function useRecipeGeneration() {
               const blob = dataURItoBlob(imgBase64);
               formData.append("images", blob, `recipe_image_${index}.png`);
             });
-            imageUrls = await recipeApi.uploadRecipeImages(recipe.recipeId, formData);
+            imageUrls = await uploadRecipeImagesAction(recipe.recipeId, formData);
           } catch (err) {
             console.error("Failed to upload images", err);
           }
@@ -374,7 +386,7 @@ export function useRecipeGeneration() {
           generatedRecipe: null,
         });
 
-        const savedRecipe = await recipeApi.saveRecipe(recipeWithImages);
+        const savedRecipe = await saveRecipeAction(recipeWithImages);
 
         setState({
           status: "success",

@@ -12,8 +12,8 @@ export interface CardProps {
 }
 
 const difficultyMap: Record<string, string> = {
-  newBie: "Beginner",
-  canCook: "Intermediate",
+  newBie: "Newbie",
+  canCook: "CanCook",
   expert: "Expert",
 };
 
@@ -49,8 +49,8 @@ const Card = ({ recipe }: CardProps) => {
         <div
           onClick={toggleLike}
           className={`absolute w-10 h-10 rounded-full right-2 top-2 
-          flex justify-center items-center backdrop-blur-sm transition-all group-hover:bg-white/60 cursor-pointer
-          ${isLiked ? "bg-red-500 text-white" : "bg-white/40 text-white"}`}
+          flex justify-center items-center backdrop-blur-sm transition-all cursor-pointer
+          ${isLiked ? "bg-red-500 text-white hover:bg-red-600" : "bg-white/40 text-white group-hover:bg-white/60"}`}
         >
           <Heart className={isLiked ? "fill-current" : ""} />
         </div>

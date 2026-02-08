@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Card from "./card";
-import { recipeApi } from "@/lib/api/recipe";
+import { getPublicRecipesAction } from "@/lib/actions/recipe-action";
 import { Recipe } from "@/lib/types/recipe.type";
 
 const CardSection = () => {
@@ -14,9 +14,8 @@ const CardSection = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const data = await recipeApi.getPublicRecipes();
+        const data = await getPublicRecipesAction();
         setRecipes(data);
-        setError(null);
       } catch (err) {
         console.error("Failed to fetch recipes:", err);
         setError("Failed to load recipes. Please try again later.");

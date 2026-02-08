@@ -31,16 +31,12 @@ export const userApi = {
     },
 
     updateUser: async (uid: string, data: Partial<User>): Promise<UserResponse> => {
-        const response = await api.put<UserResponse>(`/users/${uid}`, data);
+        const response = await api.put<UserResponse>(API.USERS.UPDATE(uid), data);
         return response.data;
     },
 
     uploadProfilePic: async (uid: string, formData: FormData): Promise<UploadResponse> => {
-        const response = await api.post<UploadResponse>(`/users/${uid}/profile-pic`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
+        const response = await api.post<UploadResponse>(API.USERS.UPLOAD_PROFILE_PIC(uid), formData);
         return response.data;
     },
 };

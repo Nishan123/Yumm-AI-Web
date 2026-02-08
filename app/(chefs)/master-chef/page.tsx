@@ -55,6 +55,7 @@ export default function MasterChefPage() {
         availableTimeMinutes: time,
         expertise: expertise,
         userId: user?.uid,
+        allergenicIngredients: user?.allergenicIngredients,
       });
 
       if (recipe) {

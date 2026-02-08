@@ -17,7 +17,7 @@ import { AllergicIngredientChips } from "./_components/AllergicIngredientChips";
 
 export default function ProfilePage() {
   const { user, logout, refreshUser, isLoading: authLoading } = useAuth();
-  const router = useRouter();k
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -40,7 +40,7 @@ export default function ProfilePage() {
         const loadedIngredients = user.allergenicIngredients.map((name) => ({
           id: name,
           ingredientName: name,
-          prefixImage: "", // URL would come from a real data source if available
+          prefixImage: "",
           quantity: "1",
           unit: "unit",
         }));
@@ -61,6 +61,16 @@ export default function ProfilePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (5MB = 5 * 1024 * 1024 bytes)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error("File is too large. Maximum size is 5MB.");
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
       setProfileImageFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }

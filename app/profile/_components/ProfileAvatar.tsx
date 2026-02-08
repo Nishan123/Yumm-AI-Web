@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Camera } from "lucide-react";
-import { User } from "@/lib/api/auth";
+import { User } from "@/lib/api/user";
 
 interface ProfileAvatarProps {
   user: User | null;

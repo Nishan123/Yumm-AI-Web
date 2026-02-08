@@ -45,6 +45,7 @@ export default function PantryChefPage() {
         availableTimeMinutes: duration,
         expertise: expertise,
         userId: user?.uid,
+        allergenicIngredients: user?.allergenicIngredients,
       });
 
       if (recipe) {

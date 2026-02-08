@@ -10,7 +10,7 @@ export const MEAL_OPTIONS = [
 ];
 
 export const EXPERTISE_OPTIONS = [
-    { value: "newbie", label: "Newbie" },
-    { value: "canCook", label: "I can cook" },
+    { value: "newBie", label: "Newbie" },
+    { value: "canCook", label: "Can Cook" },
     { value: "expert", label: "Expert" },
 ];

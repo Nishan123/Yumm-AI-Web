@@ -22,6 +22,7 @@ export interface GenerateRecipeParams {
   prompt: string;
   selectedIngredients: IngredientModel[];
   masterIngredients: IngredientModel[];
+  experienceLevel?: string;
 }
 
 /**
@@ -31,9 +32,10 @@ export async function generateRecipeWithGemini({
   prompt,
   selectedIngredients,
   masterIngredients,
+  experienceLevel,
 }: GenerateRecipeParams): Promise<Recipe> {
   console.log("Starting recipe generation...");
-  
+
   const ai = getGenAI();
   const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -58,7 +60,7 @@ export async function generateRecipeWithGemini({
   jsonString = jsonString.trim();
 
   console.log("Parsing recipe JSON...");
-  
+
   // Parse the JSON response
   let recipeJson;
   try {
@@ -97,7 +99,7 @@ export async function generateRecipeWithGemini({
       imageUrl: tool.imageUrl || "",
       isReady: false,
     })),
-    experienceLevel: recipeJson.experienceLevel || "canCook",
+    experienceLevel: experienceLevel ? sanitizeExperienceLevel(experienceLevel) : sanitizeExperienceLevel(recipeJson.experienceLevel),
     estCookingTime: recipeJson.estCookingTime || "",
     description: recipeJson.description || "",
     mealType: recipeJson.mealType || "",
@@ -106,11 +108,11 @@ export async function generateRecipeWithGemini({
     images: recipeJson.images || [],
     nutrition: recipeJson.nutrition
       ? {
-          protein: recipeJson.nutrition.protein,
-          carbs: recipeJson.nutrition.carbs,
-          fat: recipeJson.nutrition.fat,
-          fiber: recipeJson.nutrition.fiber,
-        }
+        protein: recipeJson.nutrition.protein,
+        carbs: recipeJson.nutrition.carbs,
+        fat: recipeJson.nutrition.fat,
+        fiber: recipeJson.nutrition.fiber,
+      }
       : undefined,
     servings: typeof recipeJson.servings === "number" ? recipeJson.servings : 1,
     likes: [],
@@ -131,7 +133,7 @@ function mapIngredientsFromAiResponse(
   return aiIngredients.map((aiIng: any) => {
     const aiId = aiIng.id || "";
     const aiIngredientName = (aiIng.ingredientName || "").trim();
-    const quantity = aiIng.quantity?.toString() || "";
+    const quantity = aiIng.quantity?.toString() || "As needed";
     const unit = aiIng.unit || "";
 
     // 1. Try to find by id in reference ingredients (selected by user)
@@ -219,4 +221,24 @@ function generateUUID(): string {
     const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+/**
+ * Sanitizes the experience level to ensure it matches the allowed enum values.
+ */
+function sanitizeExperienceLevel(level: string): "newBie" | "canCook" | "expert" {
+  if (!level) return "canCook";
+
+  const normalized = level.toLowerCase();
+
+  if (normalized === "newbie" || normalized === "beginner") return "newBie";
+  if (normalized === "cancook" || normalized === "intermediate" || normalized === "medium") return "canCook";
+  if (normalized === "expert" || normalized === "advanced") return "expert";
+
+  // Check against exact enum values
+  if (level === "newBie" || level === "canCook" || level === "expert") {
+    return level as "newBie" | "canCook" | "expert";
+  }
+
+  return "canCook"; // Default fallback
 }

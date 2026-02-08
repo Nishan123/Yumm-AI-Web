@@ -18,12 +18,6 @@ export const handleUpdateUserProfile = async (
 
         // 1. Upload Profile Picture if changed
         if (profileImageFile) {
-            // We expect the formData to contain the file with key 'profilePic'
-            // The caller should have prepared this FormData.
-            // However, passing FormData from client to server action is standard.
-            // But here we might receive it as a separate argument or part of the flow.
-            // Let's assume the caller manages the logic or we handle it here.
-            // Actually, standard FormData transmission:
             const response = await userApi.uploadProfilePic(uid, profileImageFile);
             if (response.success && typeof response.data === "string") {
                 newProfilePicUrl = response.data;

@@ -1,4 +1,5 @@
 import api from "./axios";
+import { API } from "./endpoints";
 import { UserRecipe, UserRecipeResponse, CheckCookbookResponse } from "../types/cookbook.type";
 
 export const cookbookApi = {
@@ -7,7 +8,7 @@ export const cookbookApi = {
      */
     checkIsInCookbook: async (userId: string, originalRecipeId: string): Promise<boolean> => {
         try {
-            const response = await api.get<CheckCookbookResponse>(`/cookbook/${userId}/check/${originalRecipeId}`);
+            const response = await api.get<CheckCookbookResponse>(API.COOKBOOK.CHECK(userId, originalRecipeId));
             if (response.data.success) {
                 return response.data.data.isInCookbook;
             }
@@ -23,7 +24,7 @@ export const cookbookApi = {
      */
     getUserRecipeByOriginal: async (userId: string, originalRecipeId: string): Promise<UserRecipe | null> => {
         try {
-            const response = await api.get<UserRecipeResponse>(`/cookbook/${userId}/original/${originalRecipeId}`);
+            const response = await api.get<UserRecipeResponse>(API.COOKBOOK.GET_BY_ORIGINAL(userId, originalRecipeId));
             if (response.data.success) {
                 return response.data.data;
             }
@@ -38,7 +39,7 @@ export const cookbookApi = {
      * Add a recipe to the cookbook
      */
     addToCookbook: async (userId: string, recipeId: string): Promise<UserRecipe> => {
-        const response = await api.post<UserRecipeResponse>("/cookbook/add", {
+        const response = await api.post<UserRecipeResponse>(API.COOKBOOK.ADD, {
             userId,
             recipeId
         });
@@ -53,7 +54,7 @@ export const cookbookApi = {
      * Update a user recipe (progress)
      */
     updateUserRecipe: async (userRecipeId: string, updates: Partial<UserRecipe>): Promise<UserRecipe> => {
-        const response = await api.put<UserRecipeResponse>(`/cookbook/recipe/${userRecipeId}`, updates);
+        const response = await api.put<UserRecipeResponse>(API.COOKBOOK.UPDATE_RECIPE(userRecipeId), updates);
 
         if (response.data.success) {
             return response.data.data;
@@ -65,7 +66,7 @@ export const cookbookApi = {
      * Remove from cookbook
      */
     removeFromCookbook: async (userRecipeId: string): Promise<void> => {
-        const response = await api.delete(`/cookbook/recipe/${userRecipeId}`);
+        const response = await api.delete(API.COOKBOOK.REMOVE(userRecipeId));
         if (!response.data.success) {
             throw new Error(response.data.message || "Failed to remove from cookbook");
         }

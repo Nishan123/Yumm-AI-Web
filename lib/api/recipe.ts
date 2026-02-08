@@ -1,4 +1,5 @@
 import api from "./axios";
+import { API } from "./endpoints";
 import { Recipe, RecipeResponse } from "../types/recipe.type";
 
 export const recipeApi = {
@@ -7,7 +8,7 @@ export const recipeApi = {
      * Endpoint: GET /publicRecipes
      */
     getPublicRecipes: async (): Promise<Recipe[]> => {
-        const response = await api.get<RecipeResponse>("/publicRecipes");
+        const response = await api.get<RecipeResponse>(API.RECIPES.PUBLIC);
 
         if (response.data.success) {
             return response.data.data;
@@ -21,7 +22,7 @@ export const recipeApi = {
      * Endpoint: GET /allRecipes
      */
     getAllRecipes: async (): Promise<Recipe[]> => {
-        const response = await api.get<RecipeResponse>("/allRecipes");
+        const response = await api.get<RecipeResponse>(API.RECIPES.ALL);
 
         if (response.data.success) {
             return response.data.data;
@@ -35,7 +36,7 @@ export const recipeApi = {
      * Endpoint: POST /saveRecipe
      */
     saveRecipe: async (recipe: Recipe): Promise<Recipe> => {
-        const response = await api.post<RecipeResponse>("/saveRecipe", recipe);
+        const response = await api.post<RecipeResponse>(API.RECIPES.SAVE, recipe);
 
         if (response.data.success) {
             return response.data.data[0] || response.data.data; // Handle if array or single obj returned
@@ -50,7 +51,7 @@ export const recipeApi = {
      */
     uploadRecipeImages: async (recipeId: string, formData: FormData): Promise<string[]> => {
         const response = await api.post<{ success: boolean; data: { images: string[] }; message: string }>(
-            `/recipe/${recipeId}/images`,
+            API.RECIPES.UPLOAD_IMAGES(recipeId),
             formData,
             {
                 headers: {
@@ -71,7 +72,7 @@ export const recipeApi = {
      * Endpoint: GET /recipe/:recipeId
      */
     getRecipe: async (recipeId: string): Promise<Recipe> => {
-        const response = await api.get<RecipeResponse>(`/recipe/${recipeId}`);
+        const response = await api.get<RecipeResponse>(API.RECIPES.GET_ONE(recipeId));
 
         if (response.data.success) {
             // The API might return an array or single object depending on implementation
@@ -86,7 +87,7 @@ export const recipeApi = {
      * Endpoint: PUT /recipe/:recipeId
      */
     updateRecipe: async (recipe: Recipe): Promise<Recipe> => {
-        const response = await api.put<RecipeResponse>(`/recipe/${recipe.recipeId}`, recipe);
+        const response = await api.put<RecipeResponse>(API.RECIPES.UPDATE(recipe.recipeId), recipe);
 
         if (response.data.success) {
             return response.data.data[0] || response.data.data;
@@ -100,7 +101,7 @@ export const recipeApi = {
      * Endpoint: POST /recipe/:recipeId/save
      */
     toggleSaveRecipe: async (recipeId: string): Promise<Recipe> => {
-        const response = await api.post<RecipeResponse>(`/recipe/${recipeId}/save`);
+        const response = await api.post<RecipeResponse>(API.RECIPES.TOGGLE_SAVE(recipeId));
 
         if (response.data.success) {
             return response.data.data as unknown as Recipe;

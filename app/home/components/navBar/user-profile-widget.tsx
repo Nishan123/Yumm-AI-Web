@@ -6,8 +6,24 @@ import { MoonStar, User, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/context/auth-context";
 
 const UserProfileWidget = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 p-1.5 pr-4 rounded-full">
+          <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+          <div className="flex flex-col items-start gap-1">
+            <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
+            <div className="w-32 h-3 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="h-8 w-px bg-gray-200 mx-2"></div>
+        <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
