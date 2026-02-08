@@ -11,7 +11,7 @@ export const recipeApi = {
         const response = await api.get<RecipeResponse>(API.RECIPES.PUBLIC);
 
         if (response.data.success) {
-            return response.data.data;
+            return response.data.data.recipe;
         }
 
         throw new Error(response.data.message || "Failed to fetch public recipes");
@@ -25,7 +25,7 @@ export const recipeApi = {
         const response = await api.get<RecipeResponse>(API.RECIPES.ALL);
 
         if (response.data.success) {
-            return response.data.data;
+            return response.data.data.recipe;
         }
 
         throw new Error(response.data.message || "Failed to fetch all recipes");
@@ -39,7 +39,7 @@ export const recipeApi = {
         const response = await api.post<RecipeResponse>(API.RECIPES.SAVE, recipe);
 
         if (response.data.success) {
-            return response.data.data[0] || response.data.data; // Handle if array or single obj returned
+            return response.data.data.recipe[0] || response.data.data.recipe; // Handle if array or single obj returned
         }
 
         throw new Error(response.data.message || "Failed to save recipe");
@@ -90,7 +90,7 @@ export const recipeApi = {
         const response = await api.put<RecipeResponse>(API.RECIPES.UPDATE(recipe.recipeId), recipe);
 
         if (response.data.success) {
-            return response.data.data[0] || response.data.data;
+            return response.data.data.recipe[0] || response.data.data.recipe;
         }
 
         throw new Error(response.data.message || "Failed to update recipe");

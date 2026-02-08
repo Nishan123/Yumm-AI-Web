@@ -21,7 +21,6 @@ export const API = {
     },
     RECIPES: {
         PUBLIC: '/publicRecipes',
-        ALL: '/allRecipes',
         SAVE: '/saveRecipe',
         GET_ONE: (recipeId: string) => `/recipe/${recipeId}`,
         UPDATE: (recipeId: string) => `/recipe/${recipeId}`,

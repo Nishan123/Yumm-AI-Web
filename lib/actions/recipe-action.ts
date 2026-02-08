@@ -22,7 +22,7 @@ export async function getPublicRecipesAction(): Promise<Recipe[]> {
     try {
         const response = await api.get<RecipeResponse>(API.RECIPES.PUBLIC);
         if (response.data.success) {
-            return response.data.data;
+            return response.data.data.recipe;
         }
         throw new Error(response.data.message || "Failed to fetch public recipes");
     } catch (error: any) {
@@ -85,7 +85,7 @@ export async function saveRecipeAction(recipe: Recipe): Promise<Recipe> {
 
         if (response.data.success) {
             revalidatePath("/home");
-            return response.data.data[0] || response.data.data;
+            return response.data.data.recipe[0] || response.data.data.recipe;
         }
         throw new Error(response.data.message || "Failed to save recipe");
     } catch (error: any) {
@@ -104,7 +104,7 @@ export async function updateRecipeAction(recipe: Recipe): Promise<Recipe> {
 
         if (response.data.success) {
             revalidatePath(`/cooking?recipeId=${recipe.recipeId}`);
-            return response.data.data[0] || response.data.data;
+            return response.data.data.recipe[0] || response.data.data.recipe;
         }
         throw new Error(response.data.message || "Failed to update recipe");
     } catch (error: any) {
@@ -115,8 +115,6 @@ export async function updateRecipeAction(recipe: Recipe): Promise<Recipe> {
 
 /**
  * Upload recipe images
- * Note: FormData must be handled carefully in Server Actions. 
- * Next.js Server Actions can accept FormData directly.
  */
 export async function uploadRecipeImagesAction(recipeId: string, formData: FormData): Promise<string[]> {
     try {
@@ -150,7 +148,7 @@ export async function getAllRecipesAction(): Promise<Recipe[]> {
         const response = await api.get<RecipeResponse>(API.RECIPES.ALL, config);
 
         if (response.data.success) {
-            return response.data.data;
+            return response.data.data.recipe;
         }
         throw new Error(response.data.message || "Failed to fetch all recipes");
     } catch (error: any) {

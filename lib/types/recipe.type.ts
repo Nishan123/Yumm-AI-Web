@@ -63,5 +63,14 @@ export interface Recipe {
 export interface RecipeResponse {
     success: boolean;
     message?: string;
-    data: Recipe[];
+    data: {
+        recipe: Recipe[];
+        pagination?: {
+            page: number;
+            size: number;
+            total: number;
+            totalPages: number;
+        };
+    };
 }
+
