@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RecipeInfoCard } from "./RecipeInfoCard";
 import { RecipeMetadata } from "./RecipeMetadata";
@@ -13,7 +14,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Recipe } from "@/lib/types/recipe.type";
 import { UserRecipe } from "@/lib/types/cookbook.type";
 import { toast } from "sonner";
-import { BookMarked, Plus } from "lucide-react";
+import { BookMarked, Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DeleteRecipeDialog } from "@/components/DeleteRecipeDialog";
+import { deleteRecipeAction } from "@/lib/actions/recipe-action";
+import { removeFromCookbookAction } from "@/lib/actions/cookbook-action";
 
 interface RecipeContentProps {
   recipe: Recipe | UserRecipe;
@@ -22,6 +32,7 @@ interface RecipeContentProps {
   isAddingToCookbook?: boolean;
   onUpdateProgress?: (updates: Partial<UserRecipe>) => void;
   currentUser?: { uid: string } | null;
+  userRecipeId?: string;
 }
 
 export const RecipeContent = ({
@@ -31,9 +42,16 @@ export const RecipeContent = ({
   isAddingToCookbook = false,
   onUpdateProgress,
   currentUser,
+  userRecipeId,
 }: RecipeContentProps) => {
+  const router = useRouter();
   const TABS = ["Ingredients", "Instructions", "Tools"];
   const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const isOwner = currentUser?.uid && currentUser.uid === recipe.generatedBy;
+  const showMenu = isOwner || isInCookbook;
 
   const checkPermission = () => {
     const isOwner = currentUser?.uid && currentUser.uid === recipe.generatedBy;
@@ -88,6 +106,40 @@ export const RecipeContent = ({
     }
   };
 
+  const handleEdit = () => {
+    // Store recipe data in sessionStorage
+    sessionStorage.setItem("editRecipe", JSON.stringify(recipe));
+    sessionStorage.setItem("isOwner", String(isOwner));
+    if (userRecipeId) {
+      sessionStorage.setItem("userRecipeId", userRecipeId);
+    }
+    router.push("/cooking/edit");
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+
+      if (isOwner) {
+        // Owner deleting recipe (cascade)
+        await deleteRecipeAction(recipe.recipeId);
+        toast.success("Recipe deleted successfully");
+      } else if (userRecipeId) {
+        // User removing from cookbook
+        await removeFromCookbookAction(userRecipeId);
+        toast.success("Recipe removed from cookbook");
+      }
+
+      setIsDeleteDialogOpen(false);
+      router.push("/home");
+    } catch (error: any) {
+      console.error("Failed to delete recipe:", error);
+      toast.error(error.message || "Failed to delete recipe");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="relative -mt-12 flex min-h-[60vh] flex-col rounded-t-[40px] bg-white p-8 border border-gray-100 dark:border-zinc-800 transition-all dark:bg-zinc-950 md:mt-0 md:min-h-0 md:rounded-none md:border-none md:p-0">
       {/* Drag Handle for Mobile (Visual only) */}
@@ -105,34 +157,66 @@ export const RecipeContent = ({
             {recipe.recipeName}
           </h1>
 
-          {/* Show Add to Cookbook ONLY if:
-              1. Not already in cookbook
-              2. Add handler is provided
-              3. Current user is NOT the creator (optional logic if creator auto-owns, but here we just hide it to avoid confusion)
-           */}
-          {!isInCookbook &&
-            onAddToCookbook &&
-            currentUser?.uid !== recipe.generatedBy && (
-              <button
-                onClick={onAddToCookbook}
-                disabled={isAddingToCookbook}
-                className="flex-shrink-0 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-orange-600 active:scale-95 disabled:opacity-50"
-              >
-                {isAddingToCookbook ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <Plus size={16} />
-                )}
-                Add to Cookbook
-              </button>
+          <div className="flex items-center gap-2">
+            {/* Show Add to Cookbook ONLY if:
+                1. Not already in cookbook
+                2. Add handler is provided
+                3. Current user is NOT the creator
+             */}
+            {!isInCookbook &&
+              onAddToCookbook &&
+              currentUser?.uid !== recipe.generatedBy && (
+                <button
+                  onClick={onAddToCookbook}
+                  disabled={isAddingToCookbook}
+                  className="flex-shrink-0 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-orange-600 active:scale-95 disabled:opacity-50"
+                >
+                  {isAddingToCookbook ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Plus size={16} />
+                  )}
+                  Add to Cookbook
+                </button>
+              )}
+
+            {isInCookbook && (
+              <div className="flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                <BookMarked size={26} />
+                In Cookbook
+              </div>
             )}
 
-          {isInCookbook && (
-            <div className="flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              <BookMarked size={26} />
-              In Cookbook
-            </div>
-          )}
+            {/* Dropdown Menu for Edit/Delete */}
+            {showMenu && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                    <MoreVertical
+                      size={20}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleEdit}
+                    className="cursor-pointer"
+                  >
+                    <Edit size={16} className="mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 size={16} className="mr-2" />
+                    {isOwner ? "Delete" : "Remove from Cookbook"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
 
         <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400 md:text-lg">
@@ -214,6 +298,15 @@ export const RecipeContent = ({
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Delete Recipe Dialog */}
+      <DeleteRecipeDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        isOwner={!!isOwner}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

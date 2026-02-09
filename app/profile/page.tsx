@@ -3,7 +3,8 @@
 import { useAuth } from "@/lib/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { handleUpdateUserProfile } from "@/lib/actions/user-action"; // Updated import
+import { handleUpdateUserProfile } from "@/lib/actions/user-action";
+import { userClientApi } from "@/lib/api/user";
 import { toast } from "sonner";
 import { AddIngredientsModal } from "../(chefs)/_components/shared/AddIngredientsModal";
 import { IngredientsWrapContainer } from "../(chefs)/_components/shared/IngredientsWrapContainer";
@@ -61,16 +62,6 @@ export default function ProfilePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (5MB = 5 * 1024 * 1024 bytes)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (file.size > maxSize) {
-        toast.error("File is too large. Maximum size is 5MB.");
-        // Reset the file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        return;
-      }
       setProfileImageFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }
@@ -92,7 +83,6 @@ export default function ProfilePage() {
     );
     const oldAllergiesSet = new Set(user.allergenicIngredients || []);
 
-    // Check if sets are equal
     const allergiesChanged =
       currentAllergiesSet.size !== oldAllergiesSet.size ||
       ![...currentAllergiesSet].every((value) => oldAllergiesSet.has(value));
@@ -107,30 +97,54 @@ export default function ProfilePage() {
     try {
       setIsUpdating(true);
 
+      // Step 1: Upload profile picture directly from the client.
+      //   This calls POST /users/:uid/profile-pic directly from the browser,
+      //   bypassing the server action to avoid FormData serialization issues.
+      //   The backend saves the file AND updates the profilePic field in the DB.
+      if (profileImageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append("profilePic", profileImageFile);
+
+        try {
+          const uploadResponse = await userClientApi.uploadProfilePic(
+            user.uid,
+            imageFormData,
+          );
+          if (!uploadResponse.success) {
+            toast.error("Failed to upload profile picture");
+            return;
+          }
+        } catch (uploadErr: any) {
+          console.error("Profile pic upload error:", uploadErr);
+          toast.error(
+            uploadErr.response?.data?.message ||
+              "Failed to upload profile picture",
+          );
+          return;
+        }
+      }
+
+      // Step 2: Update text fields (fullName, allergenicIngredients)
+      //   via server action. This calls PUT /users/:uid which
+      //   NEVER touches the profilePic field.
       const allergyNames = selectedIngredients.map((i) => i.ingredientName);
 
-      let imageFormData: FormData | undefined = undefined;
-      if (profileImageFile) {
-        imageFormData = new FormData();
-        imageFormData.append("profilePic", profileImageFile);
-      }
+      const response = await handleUpdateUserProfile(user.uid, {
+        fullName: fullName.trim(),
+        allergenicIngredients: allergyNames,
+      });
 
-      const response = await handleUpdateUserProfile(
-        user.uid,
-        {
-          fullName: fullName.trim(),
-          allergenicIngredients: allergyNames,
-        },
-        imageFormData,
-      );
-
-      if (response.success) {
-        toast.success(response.message || "Profile updated successfully!");
-        setProfileImageFile(null);
-        await refreshUser();
-      } else {
+      if (!response.success) {
         toast.error(response.message || "Failed to update profile");
+        return;
       }
+
+      // Step 3: Refresh user data from the backend DB to ensure
+      //   the UI shows the absolute latest state (including profilePic).
+      toast.success(response.message || "Profile updated successfully!");
+      setProfileImageFile(null);
+      setPreviewImage(null);
+      await refreshUser();
     } catch (error: any) {
       console.error("Profile update error:", error);
       toast.error(error.message || "Failed to update profile");

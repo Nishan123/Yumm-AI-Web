@@ -145,7 +145,7 @@ export async function uploadRecipeImagesAction(recipeId: string, formData: FormD
 export async function getAllRecipesAction(): Promise<Recipe[]> {
     try {
         const config = await getHeaders();
-        const response = await api.get<RecipeResponse>(API.RECIPES.ALL, config);
+        const response = await api.get<RecipeResponse>(API.RECIPES.PUBLIC, config);
 
         if (response.data.success) {
             return response.data.data.recipe;
@@ -154,5 +154,27 @@ export async function getAllRecipesAction(): Promise<Recipe[]> {
     } catch (error: any) {
         console.error("Error in getAllRecipesAction:", error);
         throw new Error(error.response?.data?.message || error.message || "Failed to fetch all recipes");
+    }
+}
+
+/**
+ * Delete a recipe with cascade (removes from all cookbooks)
+ */
+export async function deleteRecipeAction(recipeId: string): Promise<void> {
+    try {
+        const config = await getHeaders();
+        const response = await api.delete(API.RECIPES.DELETE_CASCADE(recipeId), config);
+
+        if (response.data.success) {
+            // Revalidate all relevant paths
+            revalidatePath("/home");
+            revalidatePath("/cook-book");
+            revalidatePath("/cooking");
+            return;
+        }
+        throw new Error(response.data.message || "Failed to delete recipe");
+    } catch (error: any) {
+        console.error("Error in deleteRecipeAction:", error);
+        throw new Error(error.response?.data?.message || error.message || "Failed to delete recipe");
     }
 }

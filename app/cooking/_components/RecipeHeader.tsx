@@ -22,7 +22,7 @@ export const RecipeHeader = ({ className, recipe }: RecipeHeaderProps) => {
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => router.back()}
+        onClick={() => router.push("/home")}
         className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg text-white transition-all hover:bg-white/20"
         aria-label="Go back"
       >

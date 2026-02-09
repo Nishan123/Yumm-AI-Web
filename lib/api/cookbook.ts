@@ -70,5 +70,36 @@ export const cookbookApi = {
         if (!response.data.success) {
             throw new Error(response.data.message || "Failed to remove from cookbook");
         }
+    },
+
+    /**
+     * Get all recipes in user's cookbook with pagination
+     */
+    getUserCookbook: async (
+        userId: string,
+        page?: number,
+        size?: number,
+        searchTerm?: string
+    ): Promise<{ recipes: UserRecipe[]; pagination: { page: number; size: number; total: number; totalPages: number } }> => {
+        try {
+            const params = new URLSearchParams();
+            if (page) params.append('page', page.toString());
+            if (size) params.append('size', size.toString());
+            if (searchTerm) params.append('searchTerm', searchTerm);
+
+            const url = `${API.COOKBOOK.GET_ALL(userId)}${params.toString() ? `?${params.toString()}` : ''}`;
+            const response = await api.get<{
+                success: boolean;
+                message?: string;
+                data: { recipes: UserRecipe[]; pagination: { page: number; size: number; total: number; totalPages: number } };
+            }>(url);
+            if (response.data.success) {
+                return response.data.data;
+            }
+            throw new Error(response.data.message || "Failed to fetch cookbook");
+        } catch (error: any) {
+            console.error("Error fetching cookbook:", error);
+            throw new Error(error.response?.data?.message || error.message || "Failed to fetch cookbook");
+        }
     }
 };

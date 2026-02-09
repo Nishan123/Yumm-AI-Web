@@ -6,6 +6,7 @@ import { RecipeContent } from "./_components/RecipeContent";
 import { RecipeImageCarousel } from "./_components/RecipeImageCarousel";
 import { useRouter } from "next/navigation";
 import { useCookingRecipe } from "@/hooks/useCookingRecipe";
+import { Recipe } from "@/lib/types/recipe.type";
 
 function CookingPageContent() {
   const router = useRouter();
@@ -18,6 +19,7 @@ function CookingPageContent() {
     addToCookbook,
     updateProgress,
     user,
+    userRecipeId,
   } = useCookingRecipe();
 
   if (loading) {
@@ -80,6 +82,7 @@ function CookingPageContent() {
             isAddingToCookbook={isAddingToCookbook}
             onUpdateProgress={updateProgress}
             currentUser={user}
+            userRecipeId={userRecipeId}
           />
         </div>
       </div>

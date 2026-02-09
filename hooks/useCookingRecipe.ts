@@ -24,6 +24,7 @@ export const useCookingRecipe = () => {
     const [isInCookbook, setIsInCookbook] = useState(false);
     const [isAddingToCookbook, setIsAddingToCookbook] = useState(false);
     const [isGeneratedRecipe, setIsGeneratedRecipe] = useState(false);
+    const [userRecipeId, setUserRecipeId] = useState<string | undefined>(undefined);
 
     const fetchRecipe = useCallback(async () => {
         // Check for generated recipe from sessionStorage first
@@ -65,6 +66,7 @@ export const useCookingRecipe = () => {
 
             let displayRecipe: Recipe | UserRecipe | null = null;
             let inCookbook = false;
+            let fetchedUserRecipeId: string | undefined = undefined;
 
             // 1. If user is logged in, check cookbook first
             if (user?.uid) {
@@ -78,6 +80,7 @@ export const useCookingRecipe = () => {
                         );
                         if (userRecipe) {
                             displayRecipe = userRecipe;
+                            fetchedUserRecipeId = userRecipe.userRecipeId;
                         } else {
                             console.error(
                                 "Recipe is in cookbook but couldn't fetch user copy",
@@ -112,6 +115,7 @@ export const useCookingRecipe = () => {
             if (displayRecipe) {
                 setRecipe(displayRecipe);
                 setIsInCookbook(inCookbook);
+                setUserRecipeId(fetchedUserRecipeId);
                 setError(null);
             } else {
                 setError("Recipe not found");
@@ -204,6 +208,7 @@ export const useCookingRecipe = () => {
         isAddingToCookbook,
         addToCookbook,
         updateProgress,
-        user
+        user,
+        userRecipeId,
     };
 };
