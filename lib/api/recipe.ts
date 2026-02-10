@@ -17,19 +17,6 @@ export const recipeApi = {
         throw new Error(response.data.message || "Failed to fetch public recipes");
     },
 
-    /**
-     * Fetch all recipes (admin use)
-     * Endpoint: GET /allRecipes
-     */
-    getAllRecipes: async (): Promise<Recipe[]> => {
-        const response = await api.get<RecipeResponse>(API.RECIPES.ALL);
-
-        if (response.data.success) {
-            return response.data.data.recipe;
-        }
-
-        throw new Error(response.data.message || "Failed to fetch all recipes");
-    },
 
     /**
      * Save a generated recipe

@@ -11,6 +11,7 @@ const navItems = [
   { name: "Every Items", path: "/every-item" },
   { name: "Cook Book", path: "/cook-book" },
   { name: "Saved Recipes", path: "/saved-recipes" },
+  { name: "Plans", path: "/plans" },
 ];
 
 const Navbar = () => {
