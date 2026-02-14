@@ -29,5 +29,6 @@ export const API = {
         UPLOAD_IMAGES: (recipeId: string) => `/recipe/${recipeId}/images`,
         TOGGLE_SAVE: (recipeId: string) => `/recipe/${recipeId}/save`,
         DELETE_CASCADE: (recipeId: string) => `/recipe/${recipeId}/cascade`,
+        GET_SAVED_RECIPES: (uid: string) => `/likedRecipes/${uid}`,
     },
 }

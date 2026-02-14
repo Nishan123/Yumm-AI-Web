@@ -16,18 +16,43 @@ const getHeaders = async () => {
 };
 
 /**
- * Fetch all public recipes from the server
+ * Fetch all public recipes from the server with pagination
  */
-export async function getPublicRecipesAction(): Promise<Recipe[]> {
+export async function getPublicRecipesAction(page: number = 1, size: number = 10): Promise<{ recipes: Recipe[], pagination: any }> {
     try {
-        const response = await api.get<RecipeResponse>(API.RECIPES.PUBLIC);
+        const response = await api.get<RecipeResponse>(`${API.RECIPES.PUBLIC}?page=${page}&size=${size}`);
         if (response.data.success) {
-            return response.data.data.recipe;
+            return {
+                recipes: response.data.data.recipe,
+                pagination: response.data.data.pagination
+            };
         }
         throw new Error(response.data.message || "Failed to fetch public recipes");
     } catch (error: any) {
         console.error("Error in getPublicRecipesAction:", error);
         throw new Error(error.response?.data?.message || error.message || "Failed to fetch public recipes");
+    }
+}
+
+/**
+ * Fetch saved recipes for the current user
+ */
+export async function getSavedRecipesAction(uid: string): Promise<Recipe[]> {
+    try {
+        const config = await getHeaders();
+        const response = await api.get<{ success: boolean; message?: string; data: { recipe: Recipe[] } }>(
+            API.RECIPES.GET_SAVED_RECIPES(uid),
+            config
+        );
+
+        if (response.data.success) {
+            return response.data.data.recipe;
+        }
+        // If no recipes are found or other success=false condition that isn't an error
+        return [];
+    } catch (error: any) {
+        console.error("Error in getSavedRecipesAction:", error);
+        throw new Error(error.response?.data?.message || error.message || "Failed to fetch saved recipes");
     }
 }
 
