@@ -46,11 +46,16 @@ const SavedRecipes = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen mb-[200px]">
+    <div className="min-h-screen">
       <Navbar />
 
-      <div className="w-full max-w-7xl px-4 md:px-8 mt-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Saved Recipes</h1>
+      <div className="w-340 mx-auto pt-30">
+        {/* Header with Title */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Saved Recipes
+          </h1>
+        </div>
 
         <SavedRecipeGrid
           recipes={recipes}

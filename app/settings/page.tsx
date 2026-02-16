@@ -76,15 +76,16 @@ const SettingsPage = () => {
           <SettingListGroup title="Account">
             <SettingItemCard
               icon={User}
-              title="Account access"
-              subtitle="Security, account activation and deactivation."
+              title="Change Password"
+              subtitle="Change your password with new one for security refresh."
               onClick={() => router.push("/settings/change-password")}
             />
             <Separator />
             <SettingItemCard
               icon={Shield}
-              title="Login & Security"
-              subtitle="Manage your information on this app."
+              title="Account access"
+              subtitle="Activate or deactivate your account."
+              onClick={() => router.push("/settings/delete-account")}
             />
             <Separator />
             <SettingItemCard

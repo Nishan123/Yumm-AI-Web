@@ -13,6 +13,9 @@ export const API = {
         GET_ONE: (uid: string) => `/user/${uid}`,
         UPDATE: (uid: string) => `/users/${uid}`,
         UPLOAD_PROFILE_PIC: (uid: string) => `/users/${uid}/profile-pic`,
+        DELETE: (uid: string) => `/users/${uid}`,
+        DELETE_WITH_PASSWORD: (uid: string) => `/users/${uid}/delete-with-password`,
+        DELETE_WITH_GOOGLE: (uid: string) => `/users/${uid}/delete-with-google`,
     },
     COOKBOOK: {
         GET_ALL: (userId: string) => `/cookbook/${userId}`,
