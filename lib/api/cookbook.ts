@@ -101,5 +101,21 @@ export const cookbookApi = {
             console.error("Error fetching cookbook:", error);
             throw new Error(error.response?.data?.message || error.message || "Failed to fetch cookbook");
         }
-    }
+    },
+
+    /**
+     * Save a private recipe directly to user's cookbook.
+     * Private recipes are NOT saved to the public Recipe collection.
+     */
+    savePrivateRecipe: async (recipeData: Record<string, any>, userId: string): Promise<UserRecipe> => {
+        const response = await api.post<UserRecipeResponse>(API.COOKBOOK.SAVE_PRIVATE, {
+            ...recipeData,
+            userId,
+        });
+
+        if (response.data.success) {
+            return response.data.data;
+        }
+        throw new Error(response.data.message || "Failed to save private recipe");
+    },
 };

@@ -110,7 +110,9 @@ export async function saveRecipeAction(recipe: Recipe): Promise<Recipe> {
 
         if (response.data.success) {
             revalidatePath("/home");
-            return response.data.data.recipe[0] || response.data.data.recipe;
+            // Server returns the recipe object directly as data
+            const data = response.data.data;
+            return (data as any).recipe?.[0] ?? (data as unknown as Recipe);
         }
         throw new Error(response.data.message || "Failed to save recipe");
     } catch (error: any) {

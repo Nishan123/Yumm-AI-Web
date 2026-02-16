@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Clock, Users, Flame, ChefHat } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ export const CookbookRecipeCard = ({
   index,
 }: CookbookRecipeCardProps) => {
   const router = useRouter();
+  const [imgError, setImgError] = useState(false);
 
   const handleClick = () => {
     router.push(`/cooking?recipeId=${recipe.originalRecipeId}`);
@@ -27,6 +29,9 @@ export const CookbookRecipeCard = ({
     recipe.steps?.filter((step) => step.isDone).length || 0;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
+  const hasImage =
+    recipe.images && recipe.images.length > 0 && recipe.images[0] && !imgError;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -37,16 +42,26 @@ export const CookbookRecipeCard = ({
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20 overflow-hidden rounded-3xl">
-        {recipe.images && recipe.images.length > 0 && recipe.images[0] ? (
+        {hasImage ? (
           <Image
             src={recipe.images[0]}
             alt={recipe.recipeName}
             fill
+            unoptimized
             className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+            onError={(e) => {
+              console.error("Image load error:", recipe.images[0], e);
+              setImgError(true);
+            }}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <ChefHat className="w-20 h-20 text-orange-400 opacity-50" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
+            <ChefHat className="w-20 h-20 text-orange-400 opacity-50 mb-2" />
+            <div className="text-[10px] text-red-500 bg-white/80 p-1 rounded">
+              {!recipe.images || recipe.images.length === 0
+                ? "No Images"
+                : `Error: ${recipe.images?.[0]}`}
+            </div>
           </div>
         )}
 

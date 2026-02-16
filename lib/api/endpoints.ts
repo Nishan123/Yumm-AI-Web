@@ -6,6 +6,8 @@ export const API = {
         GOOGLE: "/auth/google",
         FORGOT_PASSWORD: "/auth/forgot-password",
         RESET_PASSWORD: (token: string) => `/auth/reset-password/${token}`,
+        VERIFY_PASSWORD: (uid: string) => `/auth/${uid}/verify-password/`,
+        CHANGE_PASSWORD: (uid: string) => `/auth/${uid}/change-password/`,
     },
     USERS: {
         GET_ONE: (uid: string) => `/user/${uid}`,
@@ -20,6 +22,7 @@ export const API = {
         UPDATE_RECIPE: (userRecipeId: string) => `/cookbook/recipe/${userRecipeId}`,
         FULL_UPDATE: (userRecipeId: string) => `/cookbook/recipe/${userRecipeId}/full`,
         REMOVE: (userRecipeId: string) => `/cookbook/recipe/${userRecipeId}`,
+        SAVE_PRIVATE: '/cookbook/private',
     },
     RECIPES: {
         PUBLIC: '/publicRecipes',

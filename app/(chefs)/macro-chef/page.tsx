@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChefHat, ChevronDown, Check } from "lucide-react";
 import { InputWidgetTitle } from "@/app/(chefs)/_components/shared/InputWidgetTitle";
+import { VisibilitySelector } from "@/app/(chefs)/_components/shared/VisibilitySelector";
 import { IngredientsWrapContainer } from "@/app/(chefs)/_components/shared/IngredientsWrapContainer";
 import { AddIngredientsModal } from "@/app/(chefs)/_components/shared/AddIngredientsModal";
 import { AvailableTimeSelector } from "@/app/(chefs)/_components/shared/AvailableTimeSelector";
@@ -37,6 +38,7 @@ export default function MacroChefPage() {
     fats: "",
     fiber: "",
   });
+  const [isPublic, setIsPublic] = useState(true);
 
   const { state, generateMacroRecipe, resetState, isLoading } =
     useRecipeGeneration();
@@ -75,17 +77,18 @@ export default function MacroChefPage() {
         expertise: expertise,
         userId: user?.uid,
         allergenicIngredients: user?.allergenicIngredients,
+        isPublic,
       });
 
       if (recipe) {
         console.log("Recipe generated successfully:", recipe.recipeName);
-        // Store the generated recipe in sessionStorage for the cooking page
-        // Store the generated recipe in sessionStorage (optional now, but good for backup)
-        const recipeStr = JSON.stringify(recipe);
-        sessionStorage.setItem("generatedRecipe", recipeStr);
-        console.log("Recipe stored, navigating to recipe ID...");
-        // Redirect using recipeId to force loading from DB
-        window.location.href = `/cooking?recipeId=${recipe.recipeId}`;
+        // For private recipes, use generated=true since they're not in public collection
+        if (isPublic) {
+          window.location.href = `/cooking?recipeId=${recipe.recipeId}`;
+        } else {
+          sessionStorage.setItem("generatedRecipe", JSON.stringify(recipe));
+          window.location.href = `/cooking?recipeId=${recipe.recipeId}&generated=true`;
+        }
       } else {
         toast.error("No recipe was generated. Please try again.");
       }
@@ -225,6 +228,14 @@ export default function MacroChefPage() {
               if (val) setExpertise(val);
             }}
           />
+        </div>
+
+        {/* Recipe Visibility */}
+        <div className="px-4">
+          <InputWidgetTitle title="Recipe Visibility" className="px-0" />
+          <div className="mt-2">
+            <VisibilitySelector isPublic={isPublic} onChange={setIsPublic} />
+          </div>
         </div>
 
         {/* Generate Button */}

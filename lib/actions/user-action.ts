@@ -7,15 +7,7 @@ export interface UpdateUserProfileData {
     allergenicIngredients: string[];
 }
 
-/**
- * Update user text fields only (fullName, allergenicIngredients).
- * This does NOT handle profile picture uploads.
- *
- * Profile picture uploads must be done directly from the client component
- * using userApi.uploadProfilePic() — NOT through a server action —
- * because FormData with File objects does not serialize reliably
- * across the Next.js server action boundary.
- */
+
 export const handleUpdateUserProfile = async (
     uid: string,
     data: UpdateUserProfileData,

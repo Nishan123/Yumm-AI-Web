@@ -139,7 +139,7 @@ const LoginForm = () => {
             onError={handleGoogleError}
             theme="outline"
             size="large"
-            width="336px"
+            width="356px"
             text="signin_with"
             shape="pill"
           />

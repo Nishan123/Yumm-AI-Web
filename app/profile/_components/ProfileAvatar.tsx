@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { Camera } from "lucide-react";
 import { User } from "@/lib/api/user";
 
@@ -22,17 +21,10 @@ export const ProfileAvatar = ({
     <div className="relative group cursor-pointer" onClick={onImageClick}>
       <div className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg relative">
         {previewImage || user?.profilePic ? (
-          <Image
-            src={
-              previewImage ||
-              (user?.profilePic
-                ? `${user.profilePic}?t=${new Date().getTime()}`
-                : "")
-            }
+          <img
+            src={previewImage || user?.profilePic || ""}
             alt="Profile"
-            fill
-            className="object-cover"
-            unoptimized
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">

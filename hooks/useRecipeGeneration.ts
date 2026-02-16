@@ -10,6 +10,7 @@ import {
   saveRecipeAction,
   uploadRecipeImagesAction
 } from "@/lib/actions/recipe-action";
+import { savePrivateRecipeAction } from "@/lib/actions/cookbook-action";
 import {
   getPantryChefPrompt,
   getMasterChefPrompt,
@@ -67,6 +68,7 @@ export function useRecipeGeneration() {
       expertise: string;
       userId?: string;
       allergenicIngredients?: string[];
+      isPublic?: boolean;
     }) => {
       try {
         setState({
@@ -134,21 +136,30 @@ export function useRecipeGeneration() {
           }
         }
 
+        const isPublic = params.isPublic !== false;
         const recipeWithImages: Recipe = {
           ...recipe,
           images: imageUrls,
-          generatedBy: params.userId || "guest", // Use passed userId or fallback
+          generatedBy: params.userId || "guest",
+          isPublic,
         };
 
-        // Save the recipe to the server
+        // Save the recipe based on visibility
         setState({
           status: "savingRecipe",
-          loadingMessage: "Finalizing receipt...",
+          loadingMessage: "Finalizing recipe...",
           errorMessage: null,
           generatedRecipe: null,
         });
 
-        const savedRecipe = await saveRecipeAction(recipeWithImages);
+        let savedRecipe: Recipe;
+        if (isPublic) {
+          savedRecipe = await saveRecipeAction(recipeWithImages);
+        } else {
+          if (!params.userId) throw new Error("User must be logged in to save private recipes");
+          await savePrivateRecipeAction(recipeWithImages, params.userId);
+          savedRecipe = recipeWithImages;
+        }
 
         setState({
           status: "success",
@@ -158,8 +169,6 @@ export function useRecipeGeneration() {
         });
 
         return savedRecipe;
-
-        return recipeWithImages;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to generate recipe";
         setState({
@@ -185,6 +194,7 @@ export function useRecipeGeneration() {
       expertise: string;
       userId?: string;
       allergenicIngredients?: string[];
+      isPublic?: boolean;
     }) => {
       try {
         setState({
@@ -251,20 +261,29 @@ export function useRecipeGeneration() {
           }
         }
 
+        const isPublic = params.isPublic !== false;
         const recipeWithImages: Recipe = {
           ...recipe,
           images: imageUrls,
           generatedBy: params.userId || "guest",
+          isPublic,
         };
 
         setState({
           status: "savingRecipe",
-          loadingMessage: "Finalizing receipt...",
+          loadingMessage: "Finalizing recipe...",
           errorMessage: null,
           generatedRecipe: null,
         });
 
-        const savedRecipe = await saveRecipeAction(recipeWithImages);
+        let savedRecipe: Recipe;
+        if (isPublic) {
+          savedRecipe = await saveRecipeAction(recipeWithImages);
+        } else {
+          if (!params.userId) throw new Error("User must be logged in to save private recipes");
+          await savePrivateRecipeAction(recipeWithImages, params.userId);
+          savedRecipe = recipeWithImages;
+        }
 
         setState({
           status: "success",
@@ -274,8 +293,6 @@ export function useRecipeGeneration() {
         });
 
         return savedRecipe;
-
-        return recipeWithImages;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to generate recipe";
         setState({
@@ -304,6 +321,7 @@ export function useRecipeGeneration() {
       expertise: string;
       userId?: string;
       allergenicIngredients?: string[];
+      isPublic?: boolean;
     }) => {
       try {
         setState({
@@ -373,20 +391,29 @@ export function useRecipeGeneration() {
           }
         }
 
+        const isPublic = params.isPublic !== false;
         const recipeWithImages: Recipe = {
           ...recipe,
           images: imageUrls,
           generatedBy: params.userId || "guest",
+          isPublic,
         };
 
         setState({
           status: "savingRecipe",
-          loadingMessage: "Finalizing receipt...",
+          loadingMessage: "Finalizing recipe...",
           errorMessage: null,
           generatedRecipe: null,
         });
 
-        const savedRecipe = await saveRecipeAction(recipeWithImages);
+        let savedRecipe: Recipe;
+        if (isPublic) {
+          savedRecipe = await saveRecipeAction(recipeWithImages);
+        } else {
+          if (!params.userId) throw new Error("User must be logged in to save private recipes");
+          await savePrivateRecipeAction(recipeWithImages, params.userId);
+          savedRecipe = recipeWithImages;
+        }
 
         setState({
           status: "success",
@@ -396,8 +423,6 @@ export function useRecipeGeneration() {
         });
 
         return savedRecipe;
-
-        return recipeWithImages;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to generate recipe";
         setState({

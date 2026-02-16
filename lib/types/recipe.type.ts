@@ -74,3 +74,27 @@ export interface RecipeResponse {
     };
 }
 
+// Search filter types — values match mobile enums and server expectations
+export interface SearchFilters {
+    experienceLevel?: string;
+    mealType?: string;
+    minCalorie?: number;
+    maxCalorie?: number;
+}
+
+export const EXPERIENCE_LEVELS = [
+    { label: "Newbie", value: "newBie" },
+    { label: "Can Cook", value: "canCook" },
+    { label: "Expert", value: "expert" },
+] as const;
+
+export const MEAL_TYPES = [
+    { label: "Breakfast", value: "breakfast" },
+    { label: "Dinner", value: "dinner" },
+    { label: "Main Course", value: "main Course" },
+    { label: "Snacks", value: "snacks" },
+    { label: "Dessert", value: "dessert" },
+    { label: "Hard Drinks", value: "hard Drinks" },
+    { label: "Soft Drinks", value: "soft Drinks" },
+] as const;
+

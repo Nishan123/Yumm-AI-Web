@@ -103,7 +103,7 @@ export const useCookingRecipe = () => {
                     console.error("Failed to fetch recipe by ID", err);
                     // Fallback to existing public recipes logic if getRecipe failed
                     try {
-                        const recipes = await getPublicRecipesAction();
+                        const { recipes } = await getPublicRecipesAction();
                         const found = recipes.find((r) => r.recipeId === recipeId);
                         if (found) displayRecipe = found;
                     } catch (e) {

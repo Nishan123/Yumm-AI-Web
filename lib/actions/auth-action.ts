@@ -83,3 +83,40 @@ export const handleLogout = async () => {
         console.error("Logout failed:", error);
     }
 }
+
+export const handleVerifyPassword = async (uid: string, password: string) => {
+    try {
+        const success = await authApi.verifyPassword(uid, password);
+        return {
+            success,
+            message: success ? "Password verified" : "Incorrect password"
+        };
+    } catch (err: Error | any) {
+        return {
+            success: false,
+            message: err.response?.data?.message || err.message || "Verification failed"
+        };
+    }
+}
+
+export const handleChangePassword = async (uid: string, oldPassword: string, newPassword: string) => {
+    try {
+        const result = await authApi.changePassword(uid, oldPassword, newPassword);
+        if (result.success) {
+            return {
+                success: true,
+                message: "Password changed successfully",
+                data: result.data
+            };
+        }
+        return {
+            success: false,
+            message: result.message || "Password change failed"
+        }
+    } catch (err: Error | any) {
+        return {
+            success: false,
+            message: err.response?.data?.message || err.message || "Password change failed"
+        };
+    }
+}

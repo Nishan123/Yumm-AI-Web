@@ -19,10 +19,28 @@ const difficultyMap: Record<string, string> = {
 
 const Card = ({ recipe }: CardProps) => {
   const router = useRouter();
+  /* Helper to construct full image URL */
+  const getImageUrl = (imagePath?: string) => {
+    if (!imagePath) return "/images/salad.png";
+    console.log("Original imagePath:", imagePath);
+
+    if (imagePath.startsWith("http")) return imagePath;
+
+    // Normalize backslashes to forward slashes
+    const normalizedPath = imagePath.replace(/\\/g, "/");
+    // Ensure leading slash
+    const finalPath = normalizedPath.startsWith("/")
+      ? normalizedPath
+      : `/${normalizedPath}`;
+
+    console.log("Final image URL:", `http://localhost:5000${finalPath}`);
+    return `http://localhost:5000${finalPath}`;
+  };
+
   const imageUrl =
     recipe.images && recipe.images.length > 0
-      ? recipe.images[0]
-      : "/placeholder-food.jpg";
+      ? getImageUrl(recipe.images[0])
+      : "/images/salad.png";
 
   const difficulty =
     difficultyMap[recipe.experienceLevel] || recipe.experienceLevel;
@@ -36,7 +54,7 @@ const Card = ({ recipe }: CardProps) => {
   return (
     <div
       onClick={handleClick}
-      className="w-81.25 group cursor-pointer border border-gray-100 rounded-4xl p-2 transition-all duration-300 hover:border-gray-300"
+      className="w-full group cursor-pointer border border-gray-100 rounded-4xl p-2 transition-all duration-300 hover:border-gray-300"
     >
       <div className="relative rounded-3xl w-full h-64 overflow-hidden">
         <Image

@@ -140,7 +140,7 @@ const SignupForm = () => {
             onError={handleGoogleError}
             theme="outline"
             size="large"
-            width="336px"
+            width="356px"
             text="signup_with"
             shape="pill"
           />

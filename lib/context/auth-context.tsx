@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useRouter } from "next/navigation";
 import { authApi, LoginData, SignupData, GoogleAuthData } from "@/lib/api/auth";
 import { userApi, User } from "@/lib/api/user";
 import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
@@ -29,6 +30,7 @@ const AUTH_TOKEN_KEY = "auth_token";
 const USER_DATA_KEY = "auth_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,7 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     deleteCookie(USER_DATA_KEY);
     setToken(null);
     setUser(null);
-  }, []);
+    router.push("/login");
+  }, [router]);
 
   // Refresh user data from backend
   const refreshUser = useCallback(async () => {

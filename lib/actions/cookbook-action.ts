@@ -5,6 +5,8 @@ import api from "../api/axios";
 import { API } from "../api/endpoints";
 import { UserRecipe, UserRecipeResponse } from "../types/cookbook.type";
 import { getAuthToken } from "../cookie";
+import { cookbookApi } from "../api/cookbook";
+import { Recipe } from "../types/recipe.type";
 
 const getHeaders = async () => {
     const token = await getAuthToken();
@@ -94,6 +96,7 @@ export async function getCookbookAction(
         }>(url, config);
 
         if (response.data.success) {
+            console.log("Cookbook data:", JSON.stringify(response.data.data.recipes[0], null, 2));
             return response.data.data;
         }
         throw new Error(response.data.message || "Failed to fetch cookbook");
@@ -101,6 +104,25 @@ export async function getCookbookAction(
         console.error("Error in getCookbookAction:", error);
         throw new Error(
             error.response?.data?.message || error.message || "Failed to fetch cookbook"
+        );
+    }
+}
+
+/**
+ * Save a private recipe directly to the user's cookbook.
+ * Private recipes are NOT saved to the public Recipe collection.
+ */
+export async function savePrivateRecipeAction(
+    recipe: Recipe,
+    userId: string
+): Promise<void> {
+    try {
+        await cookbookApi.savePrivateRecipe(recipe, userId);
+        revalidatePath("/cook-book");
+    } catch (error: any) {
+        console.error("Error in savePrivateRecipeAction:", error);
+        throw new Error(
+            error.response?.data?.message || error.message || "Failed to save private recipe"
         );
     }
 }

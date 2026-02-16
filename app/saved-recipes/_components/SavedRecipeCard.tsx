@@ -16,10 +16,28 @@ interface SavedRecipeCardProps {
 export const SavedRecipeCard = ({ recipe, onRemove }: SavedRecipeCardProps) => {
   const router = useRouter();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  /* Helper to construct full image URL */
+  const getImageUrl = (imagePath?: string) => {
+    if (!imagePath) return "/images/salad.png";
+    console.log("Original imagePath:", imagePath);
+
+    if (imagePath.startsWith("http")) return imagePath;
+
+    // Normalize backslashes to forward slashes
+    const normalizedPath = imagePath.replace(/\\/g, "/");
+    // Ensure leading slash
+    const finalPath = normalizedPath.startsWith("/")
+      ? normalizedPath
+      : `/${normalizedPath}`;
+
+    console.log("Final image URL:", `http://localhost:5000${finalPath}`);
+    return `http://localhost:5000${finalPath}`;
+  };
+
   const imageUrl =
     recipe.images && recipe.images.length > 0
-      ? recipe.images[0]
-      : "/placeholder-food.jpg";
+      ? getImageUrl(recipe.images[0])
+      : "/images/salad.png";
 
   const { toggleLike } = useRecipeLike(recipe);
 

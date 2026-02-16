@@ -57,5 +57,15 @@ export const authApi = {
         const response = await api.post<AuthResponse>(API.AUTH.RESET_PASSWORD(token), { newPassword });
         return response.data;
     },
+
+    verifyPassword: async (uid: string, password: string): Promise<boolean> => {
+        const response = await api.post<{ success: boolean }>(API.AUTH.VERIFY_PASSWORD(uid), { password });
+        return response.data.success;
+    },
+
+    changePassword: async (uid: string, oldPassword: string, newPassword: string): Promise<AuthResponse> => {
+        const response = await api.post<AuthResponse>(API.AUTH.CHANGE_PASSWORD(uid), { oldPassword, newPassword });
+        return response.data;
+    },
 };
 

@@ -97,10 +97,6 @@ export default function ProfilePage() {
     try {
       setIsUpdating(true);
 
-      // Step 1: Upload profile picture directly from the client.
-      //   This calls POST /users/:uid/profile-pic directly from the browser,
-      //   bypassing the server action to avoid FormData serialization issues.
-      //   The backend saves the file AND updates the profilePic field in the DB.
       if (profileImageFile) {
         const imageFormData = new FormData();
         imageFormData.append("profilePic", profileImageFile);
@@ -124,9 +120,6 @@ export default function ProfilePage() {
         }
       }
 
-      // Step 2: Update text fields (fullName, allergenicIngredients)
-      //   via server action. This calls PUT /users/:uid which
-      //   NEVER touches the profilePic field.
       const allergyNames = selectedIngredients.map((i) => i.ingredientName);
 
       const response = await handleUpdateUserProfile(user.uid, {
@@ -139,8 +132,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // Step 3: Refresh user data from the backend DB to ensure
-      //   the UI shows the absolute latest state (including profilePic).
       toast.success(response.message || "Profile updated successfully!");
       setProfileImageFile(null);
       setPreviewImage(null);
