@@ -45,13 +45,15 @@ const DeleteAccountPage = () => {
   const handleConfirmDelete = () => {
     if (selectedReasons.length === 0) return;
 
+    const composedReason = selectedReasons.join(", ");
+
     if (isEmailPassword) {
       if (!password.trim()) {
         setPasswordError("Enter Password to continue");
         return;
       }
       setPasswordError("");
-      deleteWithPassword(password);
+      deleteWithPassword(password, composedReason);
     } else {
       // For Google users, show confirmation modal
       setShowConfirmModal(true);
@@ -60,7 +62,8 @@ const DeleteAccountPage = () => {
 
   const handleGoogleDeleteConfirmed = () => {
     setShowConfirmModal(false);
-    deleteWithGoogle();
+    const composedReason = selectedReasons.join(", ");
+    deleteWithGoogle(composedReason);
   };
 
   return (

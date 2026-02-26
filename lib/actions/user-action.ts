@@ -38,9 +38,9 @@ export const handleUpdateUserProfile = async (
     }
 };
 
-export const handleDeleteAccountWithPassword = async (uid: string, password: string) => {
+export const handleDeleteAccountWithPassword = async (uid: string, password: string, reason?: string) => {
     try {
-        const result = await userApi.deleteWithPassword(uid, password);
+        const result = await userApi.deleteWithPassword(uid, password, reason);
         if (result.success) {
             return {
                 success: true,
@@ -59,11 +59,11 @@ export const handleDeleteAccountWithPassword = async (uid: string, password: str
     }
 };
 
-export const handleDeleteAccountWithGoogle = async (uid: string) => {
+export const handleDeleteAccountWithGoogle = async (uid: string, reason?: string) => {
     try {
         // For Google users on the web, we use the standard delete endpoint (authenticated via session)
         // because we don't have a way to generate a fresh ID token for re-auth on the web client yet.
-        const result = await userApi.deleteUser(uid);
+        const result = await userApi.deleteUser(uid, reason);
         if (result.success) {
             return {
                 success: true,

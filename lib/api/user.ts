@@ -42,9 +42,10 @@ export const userApi = {
     /**
      * Delete user account (standard delete, used for Google auth users on web where we don't have re-auth token)
      */
-    deleteUser: async (uid: string): Promise<{ success: boolean; message?: string }> => {
+    deleteUser: async (uid: string, reason?: string): Promise<{ success: boolean; message?: string }> => {
         const response = await serverApi.delete<{ success: boolean; message?: string }>(
-            API.USERS.DELETE(uid)
+            API.USERS.DELETE(uid),
+            { data: { reason } }
         );
         return response.data;
     },
@@ -52,10 +53,10 @@ export const userApi = {
     /**
      * Delete user account with password verification (emailPassword auth users)
      */
-    deleteWithPassword: async (uid: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    deleteWithPassword: async (uid: string, password: string, reason?: string): Promise<{ success: boolean; message?: string }> => {
         const response = await serverApi.delete<{ success: boolean; message?: string }>(
             API.USERS.DELETE_WITH_PASSWORD(uid),
-            { data: { password } }
+            { data: { password, reason } }
         );
         return response.data;
     },
@@ -63,10 +64,10 @@ export const userApi = {
     /**
      * Delete user account with Google verification (Google auth users)
      */
-    deleteWithGoogle: async (uid: string, idToken: string): Promise<{ success: boolean; message?: string }> => {
+    deleteWithGoogle: async (uid: string, idToken: string, reason?: string): Promise<{ success: boolean; message?: string }> => {
         const response = await serverApi.delete<{ success: boolean; message?: string }>(
             API.USERS.DELETE_WITH_GOOGLE(uid),
-            { data: { idToken } }
+            { data: { idToken, reason } }
         );
         return response.data;
     },

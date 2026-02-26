@@ -11,11 +11,11 @@ export const useDeleteAccount = () => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
-    const deleteWithPassword = async (password: string) => {
+    const deleteWithPassword = async (password: string, reason?: string) => {
         if (!user?.uid) return;
         setIsLoading(true);
         try {
-            const result = await handleDeleteAccountWithPassword(user.uid, password);
+            const result = await handleDeleteAccountWithPassword(user.uid, password, reason);
             if (result.success) {
                 toast.success(result.message);
                 logout();
@@ -30,11 +30,11 @@ export const useDeleteAccount = () => {
         }
     };
 
-    const deleteWithGoogle = async () => {
+    const deleteWithGoogle = async (reason?: string) => {
         if (!user?.uid) return;
         setIsLoading(true);
         try {
-            const result = await handleDeleteAccountWithGoogle(user.uid);
+            const result = await handleDeleteAccountWithGoogle(user.uid, reason);
             if (result.success) {
                 toast.success(result.message);
                 logout();
