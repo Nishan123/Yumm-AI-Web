@@ -58,6 +58,11 @@ export const authApi = {
         return response.data;
     },
 
+    getUser: async (uid: string): Promise<{ success: boolean; data: User }> => {
+        const response = await api.get<{ success: boolean; data: User }>(`/user/${uid}`);
+        return response.data;
+    },
+
     verifyPassword: async (uid: string, password: string): Promise<boolean> => {
         const response = await api.post<{ success: boolean }>(API.AUTH.VERIFY_PASSWORD(uid), { password });
         return response.data.success;

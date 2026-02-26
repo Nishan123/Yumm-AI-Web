@@ -18,12 +18,12 @@ const Hero = () => {
   ];
 
   return (
-    <div className="text-center w-full max-w-4xl flex flex-col justify-center items-center gap-6 mt-12 px-4">
+    <div className="text-center w-full max-w-4xl flex flex-col justify-center items-center gap-4 md:gap-6 mt-8 md:mt-12 px-4">
       <motion.h1
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-[40px] font-bold leading-tight relative cursor-default"
+        className="text-[28px] md:text-[34px] lg:text-[40px] font-bold leading-tight relative cursor-default"
         style={{
           fontFamily: "var(--font-outfit)",
           perspective: "1000px",
@@ -41,7 +41,7 @@ const Hero = () => {
             }}
             onHoverStart={() => setHoveredWord(wordIndex)}
             onHoverEnd={() => setHoveredWord(null)}
-            className="inline-block mr-3 relative"
+            className="inline-block mr-2 md:mr-3 relative"
             style={{ transformStyle: "preserve-3d" }}
           >
             {word.text.split("").map((letter, letterIndex) => (
@@ -85,7 +85,7 @@ const Hero = () => {
           </motion.span>
         ))}
       </motion.h1>
-      <p className="w-172.75 text-[18px] font-pop font-medium text-[#000000E5] leading-relaxed">
+      <p className="w-full max-w-[691px] text-[15px] md:text-[16px] lg:text-[18px] font-pop font-medium text-[#000000E5] dark:text-gray-300 leading-relaxed">
         Get custom recipes, step by step cooking guidance, and smart tips
         tailored to your taste, all right at your fingertips making every meal
         easier, faster, and more delicious than ever.
@@ -93,7 +93,7 @@ const Hero = () => {
 
       <button
         onClick={() => router.push("/chef")}
-        className="flex items-center gap-2 bg-[#6F8A15] text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#5a7011] hover:scale-105 active:scale-95 transition-all duration-300 group mt-2"
+        className="flex items-center gap-2 bg-[#6F8A15] text-white px-6 py-3 rounded-full font-bold text-base lg:text-lg shadow-lg hover:shadow-xl hover:bg-[#5a7011] hover:scale-105 active:scale-95 transition-all duration-300 group mt-2"
       >
         <Sparkles size={20} className="group-hover:animate-pulse" />
         <span>Generate Recipes</span>

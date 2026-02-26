@@ -23,12 +23,15 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="pt-34">
-      <motion.div layoutId="search-bar" className="relative w-160 h-14 group">
+    <div className="pt-24 lg:pt-34 w-full flex justify-center px-4">
+      <motion.div
+        layoutId="search-bar"
+        className="relative w-full max-w-[640px] h-14 group"
+      >
         <input
           readOnly
           onClick={() => router.push("/search")}
-          className="w-full h-full bg-[#E4E4E4] hover:bg-white focus:bg-white rounded-full text-center px-14 text-[18px]
+          className="w-full h-full bg-[#E4E4E4] hover:bg-white focus:bg-white rounded-full text-center px-14 text-[16px] lg:text-[18px]
           border-2 border-gray-200 focus:border-[#6F8B15] focus:ring-4 focus:ring-[#6F8B15]/20
           outline-none focus:shadow-xl transition-all duration-300 ease-out
           placeholder:text-gray-500 text-gray-800 cursor-pointer"

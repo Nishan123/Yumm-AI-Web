@@ -4,9 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Card from "./card";
 import { getPublicRecipesAction } from "@/lib/actions/recipe-action";
 import { Recipe } from "@/lib/types/recipe.type";
-import { Loader2 } from "lucide-react";
+import { CardSectionSkeleton } from "./card-skeleton";
 
-const CardSection = () => {
+interface CardSectionProps {
+  mealType?: string;
+}
+
+const CardSection = ({ mealType }: CardSectionProps) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,14 +18,25 @@ const CardSection = () => {
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
 
+  // Reset when mealType changes
+  useEffect(() => {
+    setRecipes([]);
+    setPage(1);
+    setHasMore(true);
+    setError(null);
+  }, [mealType]);
+
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        // Pass page and size (10)
-        const data = await getPublicRecipesAction(page, 10);
+        const data = await getPublicRecipesAction(page, 10, mealType);
 
         setRecipes((prev) => {
+          // On page 1 (after reset), replace entirely; otherwise append
+          if (page === 1) {
+            return data.recipes;
+          }
           // Create a set of existing IDs to prevent duplicates
           const existingIds = new Set(prev.map((r) => r.recipeId));
           const newRecipes = data.recipes.filter(
@@ -34,7 +49,6 @@ const CardSection = () => {
         if (data.pagination) {
           setHasMore(data.pagination.page < data.pagination.totalPages);
         } else {
-          // Fallback if pagination is missing (should not happen with new action)
           setHasMore(data.recipes.length > 0);
         }
       } catch (err: any) {
@@ -46,7 +60,7 @@ const CardSection = () => {
     };
 
     fetchRecipes();
-  }, [page]); // Re-run when page changes
+  }, [page, mealType]);
 
   const lastRecipeElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -64,9 +78,13 @@ const CardSection = () => {
     [loading, hasMore],
   );
 
+  if (recipes.length === 0 && loading) {
+    return <CardSectionSkeleton />;
+  }
+
   if (error && recipes.length === 0) {
     return (
-      <div className="w-340 mt-8 flex justify-center items-center min-h-96">
+      <div className="w-full max-w-[1360px] px-4 lg:px-0 mt-8 flex justify-center items-center min-h-96">
         <div className="text-center text-red-500">
           <p className="text-xl mb-2">⚠️ {error}</p>
           <button
@@ -82,17 +100,17 @@ const CardSection = () => {
 
   if (recipes.length === 0 && !loading) {
     return (
-      <div className="w-340 mt-8 flex justify-center items-center min-h-96">
+      <div className="w-full max-w-[1360px] px-4 lg:px-0 mt-8 flex justify-center items-center min-h-96">
         <p className="text-gray-600 text-lg">
-          No recipes available at the moment.
+          No recipes available for this category.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="w-340 mt-8">
-      <div className="grid grid-cols-4 gap-6">
+    <div className="w-full max-w-[1360px] px-4 lg:px-0 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {recipes.map((recipe, index) => {
           if (recipes.length === index + 1) {
             return (
@@ -107,8 +125,19 @@ const CardSection = () => {
       </div>
 
       {loading && (
-        <div className="w-full flex justify-center items-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`skeleton-${i}`}
+              className="w-full border border-gray-100 dark:border-zinc-800 rounded-4xl p-2 animate-pulse"
+            >
+              <div className="rounded-3xl w-full h-48 sm:h-56 lg:h-64 bg-gray-200 dark:bg-zinc-800" />
+              <div className="flex flex-col gap-1.5 pt-2">
+                <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-lg w-3/4" />
+                <div className="h-4 bg-gray-100 dark:bg-zinc-800/60 rounded-lg w-full" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

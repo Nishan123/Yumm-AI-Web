@@ -14,7 +14,8 @@ import {
   handleGoogleLogin,
   handleLogout,
 } from "@/lib/actions/auth-action";
-import { User, LoginData, SignupData } from "@/lib/api/auth";
+import { LoginData, SignupData } from "@/lib/api/auth";
+import { User } from "@/lib/api/user";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth"; // We might still need api for refreshing user if not via action
 

@@ -12,10 +12,7 @@ const Chef = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
         {/* Left Section: Header & Intro */}
         <div className="flex-1 text-center lg:text-left space-y-6 z-10 w-full max-w-lg lg:max-w-none">
-          <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-4 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-sm font-medium mb-2">
-            <Sparkles className="w-4 h-4" />
-            <span>AI-Powered Cooking</span>
-          </div>
+
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1]">
             Who's cooking <br className="hidden lg:block" />

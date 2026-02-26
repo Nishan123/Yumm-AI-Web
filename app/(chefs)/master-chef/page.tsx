@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChefHat, ChevronDown, Check } from "lucide-react";
+import { ArrowLeft, ChefHat } from "lucide-react";
 import { InputWidgetTitle } from "@/app/(chefs)/_components/shared/InputWidgetTitle";
 import { VisibilitySelector } from "@/app/(chefs)/_components/shared/VisibilitySelector";
 import { IngredientsWrapContainer } from "@/app/(chefs)/_components/shared/IngredientsWrapContainer";
@@ -12,12 +12,12 @@ import { CustomTabBar } from "@/app/(chefs)/_components/shared/CustomTabBar";
 import { IngredientModel } from "@/data/mockIngredients";
 import { MEAL_OPTIONS, EXPERTISE_OPTIONS } from "@/data/options";
 import { MealSelector } from "@/app/(chefs)/_components/shared/MealSelector";
-import { ConstantsString } from "@/data/constants";
-import { cn } from "@/lib/utils";
 import { NumberOfPeopleSelector } from "@/app/(chefs)/_components/master-chef/NumberOfPeopleSelector";
 import { DietaryRestrictionsSelector } from "@/app/(chefs)/_components/shared/DietaryRestrictionsSelector";
 import { RecipeGenerationModal } from "@/app/(chefs)/_components/shared/RecipeGenerationModal";
 import { useRecipeGeneration } from "@/hooks/useRecipeGeneration";
+import { useShoppingList } from "@/hooks/useShoppingList";
+import { usePantryInventory } from "@/hooks/usePantryInventory";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/auth-context";
 
@@ -37,9 +37,45 @@ export default function MasterChefPage() {
   const [preferences, setPreferences] = useState("");
   const [isPublic, setIsPublic] = useState(true);
 
+  // Ingredients List / Your Inventory tab
+  const [ingredientTab, setIngredientTab] = useState("Ingredients List");
+  const isInventoryTab = ingredientTab === "Your Inventory";
+
+  // Shopping list + pantry inventory hooks
+  const { items: shoppingListItems, fetchItems: fetchShoppingList } =
+    useShoppingList();
+  const pantryItems = usePantryInventory(shoppingListItems);
+
   const { state, generateMasterRecipe, resetState, isLoading } =
     useRecipeGeneration();
-  const { user, isLoading: loading } = useAuth();
+  const { user } = useAuth();
+
+  // Fetch shopping list on mount for pantry inventory
+  useEffect(() => {
+    if (user) {
+      fetchShoppingList();
+    }
+  }, [user, fetchShoppingList]);
+
+  // When switching to "Your Inventory" tab, load pantry items
+  const handleTabChange = useCallback(
+    (tab: string) => {
+      setIngredientTab(tab);
+      if (tab === "Your Inventory") {
+        setSelectedIngredients([...pantryItems]);
+      } else {
+        setSelectedIngredients([]);
+      }
+    },
+    [pantryItems],
+  );
+
+  // Keep pantry items synced when on inventory tab
+  useEffect(() => {
+    if (isInventoryTab) {
+      setSelectedIngredients([...pantryItems]);
+    }
+  }, [pantryItems, isInventoryTab]);
 
   const handleGenerateRecipe = async () => {
     if (selectedIngredients.length === 0) {
@@ -62,8 +98,6 @@ export default function MasterChefPage() {
       });
 
       if (recipe) {
-        console.log("Recipe generated successfully:", recipe.recipeName);
-        // For private recipes, use generated=true since they're not in public collection
         if (isPublic) {
           window.location.href = `/cooking?recipeId=${recipe.recipeId}`;
         } else {
@@ -94,20 +128,36 @@ export default function MasterChefPage() {
       </div>
 
       <div className="max-w-md mx-auto py-6 space-y-6">
-        {/* Ingredients */}
+        {/* Ingredients List / Your Inventory Tab */}
+        <div className="px-4">
+          <CustomTabBar
+            tabs={["Ingredients List", "Your Inventory"]}
+            activeTab={ingredientTab}
+            onTabChange={handleTabChange}
+          />
+        </div>
+
+        {/* Ingredients Section */}
         <div>
           <InputWidgetTitle
-            title="Selected ingredients"
-            haveActionButton
+            title={
+              isInventoryTab ? "Pantry ingredients" : "Selected ingredients"
+            }
+            haveActionButton={!isInventoryTab}
             actionButtonText="Add Item"
             onActionTap={() => setIsAddModalOpen(true)}
           />
           <IngredientsWrapContainer
             items={selectedIngredients}
-            onRemoveItem={(id) =>
-              setSelectedIngredients((prev) => prev.filter((i) => i.id !== id))
+            onRemoveItem={
+              isInventoryTab
+                ? () => {}
+                : (id) =>
+                    setSelectedIngredients((prev) =>
+                      prev.filter((i) => i.id !== id),
+                    )
             }
-            haveAddIngredientButton
+            haveAddIngredientButton={!isInventoryTab}
             onAddIngredientButtonPressed={() => setIsAddModalOpen(true)}
           />
         </div>

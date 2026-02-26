@@ -18,9 +18,13 @@ const getHeaders = async () => {
 /**
  * Fetch all public recipes from the server with pagination
  */
-export async function getPublicRecipesAction(page: number = 1, size: number = 10): Promise<{ recipes: Recipe[], pagination: any }> {
+export async function getPublicRecipesAction(page: number = 1, size: number = 10, mealType?: string): Promise<{ recipes: Recipe[], pagination: any }> {
     try {
-        const response = await api.get<RecipeResponse>(`${API.RECIPES.PUBLIC}?page=${page}&size=${size}`);
+        let url = `${API.RECIPES.PUBLIC}?page=${page}&size=${size}`;
+        if (mealType) {
+            url += `&mealType=${encodeURIComponent(mealType)}`;
+        }
+        const response = await api.get<RecipeResponse>(url);
         if (response.data.success) {
             return {
                 recipes: response.data.data.recipe,

@@ -37,4 +37,14 @@ export const API = {
         DELETE_CASCADE: (recipeId: string) => `/recipe/${recipeId}/cascade`,
         GET_SAVED_RECIPES: (uid: string) => `/likedRecipes/${uid}`,
     },
+    BUG_REPORT: {
+        CREATE: '/bug-report',
+        UPLOAD_SCREENSHOT: '/bug-report/upload-screenshot',
+    },
+    SHOPPING_LIST: {
+        GET_ALL: '/shopping-list',
+        ADD: '/shopping-list',
+        UPDATE: (itemId: string) => `/shopping-list/${itemId}`,
+        DELETE: (itemId: string) => `/shopping-list/${itemId}`,
+    },
 }

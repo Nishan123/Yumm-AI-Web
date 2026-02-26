@@ -56,7 +56,7 @@ const Card = ({ recipe }: CardProps) => {
       onClick={handleClick}
       className="w-full group cursor-pointer border border-gray-100 rounded-4xl p-2 transition-all duration-300 hover:border-gray-300"
     >
-      <div className="relative rounded-3xl w-full h-64 overflow-hidden">
+      <div className="relative rounded-3xl w-full h-48 sm:h-56 lg:h-64 overflow-hidden">
         <Image
           src={imageUrl}
           alt={recipe.recipeName}
