@@ -1,5 +1,5 @@
 import { IngredientModel } from "@/data/mockIngredients";
-import { KitchenTool } from "@/lib/services/kitchenTools";
+import { KitchenTool, getAllKitchenTools } from "@/lib/services/kitchenTools";
 
 // ============ HELPER METHODS ============
 
@@ -337,5 +337,65 @@ ${getRecipeJsonStructure(expertiseLevel, mealType, 1)}
 ${getRecipeReminders()}
 - STRICTLY follow all dietary restrictions - this is critical for health and safety
 - Ensure the nutrition values closely match the target macronutrients
+`;
+}
+
+// ============ SCANNER PROMPT METHODS ============
+
+export function getFridgeScannerPrompt(mealType: string): string {
+  const kitchenTools = getAllKitchenTools();
+  const kitchenToolsList = formatKitchenTools(kitchenTools);
+  const expertiseLevel = "canCook";
+
+  return `
+You are an expert chef who can identify ingredients from a photo of a fridge or pantry.
+Analyze the image provided and identify all the visible ingredients.
+Then, create a delicious ${mealType} recipe using ONLY the identified ingredients (you may assume basic pantry staples like salt, pepper, oil, water, and common spices are available).
+
+**Available Kitchen Tools:**
+${kitchenToolsList}
+
+**Instructions:**
+1. Identify all ingredients visible in the fridge/pantry image.
+2. Create a ${mealType} recipe based on these ingredients.
+3. If the image does not contain any food items or ingredients, return a JSON with "error": "No food items detected in the image."
+4. Provide VERY DETAILED cooking steps and initial preparation steps.
+5. In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above.
+
+**IMPORTANT: Return ONLY a valid JSON object with NO additional text.**
+
+Return the recipe in the following JSON structure:
+${getRecipeJsonStructure(expertiseLevel, mealType, 2)}
+
+${getRecipeReminders()}
+`;
+}
+
+export function getReceiptScannerPrompt(mealType: string): string {
+  const kitchenTools = getAllKitchenTools();
+  const kitchenToolsList = formatKitchenTools(kitchenTools);
+  const expertiseLevel = "canCook";
+
+  return `
+You are an expert chef who can read grocery receipts and create recipes.
+Analyze the receipt image provided and identify all the purchased ingredients.
+Then, create a delicious ${mealType} recipe using these ingredients (you may assume basic pantry staples like salt, pepper, oil, water are available).
+
+**Available Kitchen Tools:**
+${kitchenToolsList}
+
+**Instructions:**
+1. Read the receipt and extract the list of ingredients.
+2. Create a ${mealType} recipe based on these ingredients.
+3. If the image is not a receipt or does not contain food items, return a JSON with "error": "Invalid receipt or no food items detected."
+4. Provide VERY DETAILED cooking steps and initial preparation steps.
+5. In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above.
+
+**IMPORTANT: Return ONLY a valid JSON object with NO additional text.**
+
+Return the recipe in the following JSON structure:
+${getRecipeJsonStructure(expertiseLevel, mealType, 2)}
+
+${getRecipeReminders()}
 `;
 }

@@ -123,6 +123,138 @@ export async function generateRecipeWithGemini({
 }
 
 /**
+ * Parameters for image-based recipe generation (fridge/receipt scanner)
+ */
+export interface GenerateRecipeFromImageParams {
+  prompt: string;
+  imageBase64: string;
+  masterIngredients: IngredientModel[];
+}
+
+/**
+ * Generates a recipe from an image using Gemini AI's multimodal capabilities.
+ * Used for fridge scanner (photo of fridge) and receipt scanner (photo of receipt).
+ */
+export async function generateRecipeFromImageWithGemini({
+  prompt,
+  imageBase64,
+  masterIngredients,
+}: GenerateRecipeFromImageParams): Promise<Recipe> {
+  console.log("Starting image-based recipe generation...");
+
+  const ai = getGenAI();
+  const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  // Extract mime type and base64 data from the data URI
+  const mimeMatch = imageBase64.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+  const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+  const base64Data = imageBase64.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
+
+  console.log("Sending prompt + image to Gemini...");
+  const result = await model.generateContent([
+    { text: prompt },
+    {
+      inlineData: {
+        mimeType,
+        data: base64Data,
+      },
+    },
+  ]);
+
+  const response = await result.response;
+  let jsonString = response.text();
+
+  console.log("Received response from Gemini (image-based)");
+
+  if (!jsonString) {
+    throw new Error("Failed to generate recipe - empty response from AI");
+  }
+
+  // Clean up the JSON string
+  if (jsonString.includes("```json")) {
+    jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "");
+  } else if (jsonString.includes("```")) {
+    jsonString = jsonString.replace(/```/g, "");
+  }
+
+  jsonString = jsonString.trim();
+
+  // Check for error in JSON (e.g., "No food items detected")
+  if (jsonString.includes('"error":')) {
+    try {
+      const errorMap = JSON.parse(jsonString);
+      if (errorMap.error) {
+        throw new Error(errorMap.error);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message !== "Failed to parse recipe response from AI") {
+        throw e;
+      }
+    }
+  }
+
+  console.log("Parsing recipe JSON (image-based)...");
+
+  let recipeJson;
+  try {
+    recipeJson = JSON.parse(jsonString);
+  } catch (parseError) {
+    console.error("Failed to parse JSON:", jsonString.substring(0, 500));
+    throw new Error("Failed to parse recipe response from AI");
+  }
+
+  // Map ingredients — empty reference list since scanner identifies ingredients from image
+  const mappedIngredients = mapIngredientsFromAiResponse(
+    recipeJson.ingredients || [],
+    [],
+    masterIngredients
+  );
+
+  const recipe: Recipe = {
+    recipeId: recipeJson.recipeId || generateUUID(),
+    generatedBy: "",
+    recipeName: recipeJson.recipeName || "",
+    ingredients: mappedIngredients,
+    steps: (recipeJson.steps || []).map((step: any, index: number) => ({
+      id: step.id || `step-${index + 1}`,
+      instruction: step.instruction || "",
+      isDone: false,
+    })),
+    initialPreparation: (recipeJson.initialPreparation || []).map((prep: any, index: number) => ({
+      id: prep.id || `prep-${index + 1}`,
+      instruction: prep.instruction || "",
+      isDone: false,
+    })),
+    kitchenTools: (recipeJson.kitchenTools || []).map((tool: any) => ({
+      toolId: tool.toolId || "",
+      toolName: tool.toolName || "",
+      imageUrl: tool.imageUrl || "",
+      isReady: false,
+    })),
+    experienceLevel: sanitizeExperienceLevel(recipeJson.experienceLevel || "canCook"),
+    estCookingTime: recipeJson.estCookingTime || "",
+    description: recipeJson.description || "",
+    mealType: recipeJson.mealType || "",
+    cuisine: recipeJson.cuisine || "",
+    calorie: typeof recipeJson.calorie === "number" ? recipeJson.calorie : 0,
+    images: recipeJson.images || [],
+    nutrition: recipeJson.nutrition
+      ? {
+        protein: recipeJson.nutrition.protein,
+        carbs: recipeJson.nutrition.carbs,
+        fat: recipeJson.nutrition.fat,
+        fiber: recipeJson.nutrition.fiber,
+      }
+      : undefined,
+    servings: typeof recipeJson.servings === "number" ? recipeJson.servings : 2,
+    likes: [],
+    isPublic: true,
+  };
+
+  return recipe;
+}
+
+/**
  * Maps ingredients from AI response to real ingredient data
  */
 function mapIngredientsFromAiResponse(

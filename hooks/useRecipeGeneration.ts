@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Recipe } from "@/lib/types/recipe.type";
 import { IngredientModel, MOCK_INGREDIENTS } from "@/data/mockIngredients";
 import { generateRecipeWithGemini } from "@/lib/services/gemini";
+import { generateRecipeFromImageWithGemini } from "@/lib/services/gemini";
 import { generateRecipeImages } from "@/lib/services/imagen";
 import { getAllKitchenTools } from "@/lib/services/kitchenTools";
 import {
@@ -15,6 +16,8 @@ import {
   getPantryChefPrompt,
   getMasterChefPrompt,
   getMacroChefPrompt,
+  getFridgeScannerPrompt,
+  getReceiptScannerPrompt,
   PantryChefParams,
   MasterChefParams,
   MacroChefParams,
@@ -437,12 +440,224 @@ export function useRecipeGeneration() {
     []
   );
 
+  const generateFridgeScannerRecipe = useCallback(
+    async (params: {
+      imageBase64: string;
+      mealType: string;
+      userId?: string;
+      isPublic?: boolean;
+    }) => {
+      try {
+        setState({
+          status: "generatingRecipe",
+          loadingMessage: "Analyzing your fridge...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        const prompt = getFridgeScannerPrompt(params.mealType);
+
+        const recipe = await generateRecipeFromImageWithGemini({
+          prompt,
+          imageBase64: params.imageBase64,
+          masterIngredients: MOCK_INGREDIENTS,
+        });
+
+        // Generate images for the recipe
+        setState({
+          status: "generatingImages",
+          loadingMessage: "Generating beautiful food images...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        const images = await generateRecipeImages({
+          recipeName: recipe.recipeName,
+          description: recipe.description,
+          numberOfImages: 1,
+        });
+
+        let imageUrls: string[] = [];
+
+        if (images.length > 0) {
+          setState({
+            status: "savingRecipe",
+            loadingMessage: "Saving your recipe...",
+            errorMessage: null,
+            generatedRecipe: null,
+          });
+
+          try {
+            const formData = new FormData();
+            images.forEach((imgBase64, index) => {
+              const blob = dataURItoBlob(imgBase64);
+              formData.append("images", blob, `recipe_image_${index}.png`);
+            });
+            imageUrls = await uploadRecipeImagesAction(recipe.recipeId, formData);
+          } catch (err) {
+            console.error("Failed to upload images", err);
+          }
+        }
+
+        const isPublic = params.isPublic !== false;
+        const recipeWithImages: Recipe = {
+          ...recipe,
+          images: imageUrls,
+          generatedBy: params.userId || "guest",
+          isPublic,
+        };
+
+        setState({
+          status: "savingRecipe",
+          loadingMessage: "Finalizing recipe...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        let savedRecipe: Recipe;
+        if (isPublic) {
+          savedRecipe = await saveRecipeAction(recipeWithImages);
+        } else {
+          if (!params.userId) throw new Error("User must be logged in to save private recipes");
+          await savePrivateRecipeAction(recipeWithImages, params.userId);
+          savedRecipe = recipeWithImages;
+        }
+
+        setState({
+          status: "success",
+          loadingMessage: null,
+          errorMessage: null,
+          generatedRecipe: savedRecipe,
+        });
+
+        return savedRecipe;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to generate recipe";
+        setState({
+          status: "error",
+          loadingMessage: null,
+          errorMessage,
+          generatedRecipe: null,
+        });
+        throw error;
+      }
+    },
+    []
+  );
+
+  const generateReceiptScannerRecipe = useCallback(
+    async (params: {
+      imageBase64: string;
+      mealType: string;
+      userId?: string;
+      isPublic?: boolean;
+    }) => {
+      try {
+        setState({
+          status: "generatingRecipe",
+          loadingMessage: "Scanning your receipt...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        const prompt = getReceiptScannerPrompt(params.mealType);
+
+        const recipe = await generateRecipeFromImageWithGemini({
+          prompt,
+          imageBase64: params.imageBase64,
+          masterIngredients: MOCK_INGREDIENTS,
+        });
+
+        // Generate images for the recipe
+        setState({
+          status: "generatingImages",
+          loadingMessage: "Generating beautiful food images...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        const images = await generateRecipeImages({
+          recipeName: recipe.recipeName,
+          description: recipe.description,
+          numberOfImages: 1,
+        });
+
+        let imageUrls: string[] = [];
+
+        if (images.length > 0) {
+          setState({
+            status: "savingRecipe",
+            loadingMessage: "Saving your recipe...",
+            errorMessage: null,
+            generatedRecipe: null,
+          });
+
+          try {
+            const formData = new FormData();
+            images.forEach((imgBase64, index) => {
+              const blob = dataURItoBlob(imgBase64);
+              formData.append("images", blob, `recipe_image_${index}.png`);
+            });
+            imageUrls = await uploadRecipeImagesAction(recipe.recipeId, formData);
+          } catch (err) {
+            console.error("Failed to upload images", err);
+          }
+        }
+
+        const isPublic = params.isPublic !== false;
+        const recipeWithImages: Recipe = {
+          ...recipe,
+          images: imageUrls,
+          generatedBy: params.userId || "guest",
+          isPublic,
+        };
+
+        setState({
+          status: "savingRecipe",
+          loadingMessage: "Finalizing recipe...",
+          errorMessage: null,
+          generatedRecipe: null,
+        });
+
+        let savedRecipe: Recipe;
+        if (isPublic) {
+          savedRecipe = await saveRecipeAction(recipeWithImages);
+        } else {
+          if (!params.userId) throw new Error("User must be logged in to save private recipes");
+          await savePrivateRecipeAction(recipeWithImages, params.userId);
+          savedRecipe = recipeWithImages;
+        }
+
+        setState({
+          status: "success",
+          loadingMessage: null,
+          errorMessage: null,
+          generatedRecipe: savedRecipe,
+        });
+
+        return savedRecipe;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to generate recipe";
+        setState({
+          status: "error",
+          loadingMessage: null,
+          errorMessage,
+          generatedRecipe: null,
+        });
+        throw error;
+      }
+    },
+    []
+  );
+
   return {
     state,
     resetState,
     generatePantryRecipe,
     generateMasterRecipe,
     generateMacroRecipe,
+    generateFridgeScannerRecipe,
+    generateReceiptScannerRecipe,
     isLoading: state.status === "generatingRecipe" || state.status === "generatingImages" || state.status === "savingRecipe",
   };
 }
