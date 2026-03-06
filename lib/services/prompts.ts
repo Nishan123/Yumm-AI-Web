@@ -107,6 +107,7 @@ Remember:
 - Include at least 3-5 detailed preparation steps
 - Be specific about temperatures, times, and visual/audio cues
 - Ensure the recipe is achievable with the given ingredients and time constraint
+- The ingredients list MUST be a subset of the provided/identified ingredients; do not invent, rename, or swap items. Only include pantry staples (salt, pepper, oil, spices, etc.) if they exist in the provided ingredients list.
 - "experienceLevel" MUST be one of: "newBie", "canCook", "expert". Do not use "Beginner", "Intermediate", or any other value.`;
 }
 
@@ -151,7 +152,7 @@ You are an expert pantry chef and culinary instructor. Based on the available in
 **Cook's Experience Level:** \${expertiseLevel}
 
 **Instructions:**
-1. Create a recipe that ONLY uses the provided ingredients (you may assume basic pantry staples like salt, pepper, oil, and water are available).
+1. Create a recipe that ONLY uses the provided ingredients. You may use any subset, but you MUST NOT introduce any ingredient that is not in the **Available Ingredients** list. Pantry staples (salt, pepper, oil, water, common spices) may be used only if they appear in the **Available Ingredients** list; otherwise, omit them.
 2. The recipe must be completable within the available time.
 3. Adjust complexity based on the cook's experience level.
 4. CRITICAL: STRICTLY EXCLUDE any ingredients found in "**Allergic Ingredients**". Even if such an ingredient is listed in "**Available Ingredients**", you MUST IGNORE it completely. Do not include it in the recipe ingredients, instructions, or preparation.
@@ -217,7 +218,7 @@ You are a world-class master chef and culinary expert. Create an exceptional, re
 **Cook's Experience Level:** \${expertiseLevel}
 
 **Instructions:**
-1. Create a recipe that uses the provided ingredients as the primary components. You may add common pantry staples (salt, pepper, oil, butter, common spices, garlic, onion, etc.) to enhance the dish.
+1. Create a recipe that uses ONLY the provided ingredients as the components. You may use any subset of them, but DO NOT introduce any ingredient that is not in the **Available Ingredients** list. Pantry staples (salt, pepper, oil, butter, common spices, garlic, onion, etc.) can be included only if they exist in the **Available Ingredients** list.
 2. The recipe MUST strictly adhere to ALL dietary restrictions listed above. If a restriction is "Vegetarian", do not include any meat. If "Gluten-Free", avoid all gluten-containing ingredients, etc.
 3. CRITICAL: STRICTLY EXCLUDE any ingredients found in "**Allergic Ingredients**". Even if such an ingredient is listed in "**Available Ingredients**", you MUST IGNORE it completely. Do not include it in the recipe ingredients, instructions, or preparation.
 4. The recipe must be completable within the available time and scaled for the specified number of servings.
@@ -229,7 +230,8 @@ You are a world-class master chef and culinary expert. Create an exceptional, re
 6. Provide VERY DETAILED cooking steps - explain techniques, temperatures, visual/audio cues, and timing for each step.
 7. Provide VERY DETAILED initial preparation steps - explain how to wash, cut, measure, and organize ingredients before cooking begins.
 8. CRITICAL: In the "ingredients" array, the "id" and "ingredientName" fields MUST match EXACTLY with values from the "Available Ingredients" list above. Do not modify, abbreviate, or create new names. Only use the exact values provided.
-9. CRITICAL: In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above. Do not include any tools not in this list. Only use tools from the provided list.
+9. The "ingredients" array must be a subset of the **Available Ingredients** list. Do NOT add or invent any ingredients that were not provided.
+10. CRITICAL: In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above. Do not include any tools not in this list. Only use tools from the provided list.
 
 **IMPORTANT: Return ONLY a valid JSON object with NO additional text, markdown, or explanation. The response must be parseable JSON.**
 
@@ -308,7 +310,7 @@ try ignoring unrealistic macronutrients target value if possible but try your be
 
 **Instructions:**
 1. Create a recipe that CLOSELY matches the target macronutrients above. The nutrition values in your response should be within ±10% of the targets.
-2. Use the provided ingredients as the base, and you may suggest additional ingredients to meet the macro targets.
+2. Use ONLY the provided ingredients. You may choose any subset, but you MUST NOT introduce new ingredients beyond the **Available Ingredients** list. If exact macro targets cannot be met with the provided ingredients, get as close as possible while staying within the list.
 3. The recipe MUST strictly adhere to ALL dietary restrictions listed above.
 4. CRITICAL: STRICTLY EXCLUDE any ingredients found in "**Allergic Ingredients**". Even if such an ingredient is listed in "**Available Ingredients**", you MUST IGNORE it completely. Do not include it in the recipe ingredients, instructions, or preparation.
 5. The recipe must be completable within the available time.
@@ -357,7 +359,7 @@ ${kitchenToolsList}
 
 **Instructions:**
 1. Identify all ingredients visible in the fridge/pantry image.
-2. Create a ${mealType} recipe based on these ingredients.
+2. Create a ${mealType} recipe using ONLY the identified ingredients. Do NOT add any ingredient that was not clearly identified from the image.
 3. If the image does not contain any food items or ingredients, return a JSON with "error": "No food items detected in the image."
 4. Provide VERY DETAILED cooking steps and initial preparation steps.
 5. In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above.
@@ -386,7 +388,7 @@ ${kitchenToolsList}
 
 **Instructions:**
 1. Read the receipt and extract the list of ingredients.
-2. Create a ${mealType} recipe based on these ingredients.
+2. Create a ${mealType} recipe using ONLY the extracted ingredients. Do NOT add any ingredient that was not clearly present on the receipt.
 3. If the image is not a receipt or does not contain food items, return a JSON with "error": "Invalid receipt or no food items detected."
 4. Provide VERY DETAILED cooking steps and initial preparation steps.
 5. In the "kitchenTools" array, the "toolId", "toolName", and "imageUrl" fields MUST match EXACTLY with values from the "Available Kitchen Tools" list above.

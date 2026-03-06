@@ -135,7 +135,9 @@ export async function updateRecipeAction(recipe: Recipe): Promise<Recipe> {
 
         if (response.data.success) {
             revalidatePath(`/cooking?recipeId=${recipe.recipeId}`);
-            return response.data.data.recipe[0] || response.data.data.recipe;
+            const data = response.data.data;
+            // Server returns recipe directly as data object, not wrapped in an array
+            return (data as any).recipe?.[0] ?? (data as unknown as Recipe);
         }
         throw new Error(response.data.message || "Failed to update recipe");
     } catch (error: any) {
